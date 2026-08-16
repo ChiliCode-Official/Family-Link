@@ -1,0 +1,245 @@
+.payment-alert-container {
+  background-color: #fff7e6;
+  display: flex;
+  width: 250px;
+  height: 75px;
+  position: relative;
+  border-radius: 5px;
+  transition: 0.3s ease-in-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+.payment-alert-container:hover {
+  transform: scale(1.03);
+  width: 270px;
+}
+
+.payment-alert-container:hover .left-side {
+  width: 100%;
+}
+
+.payment-alert-container .left-side {
+  background: linear-gradient(135deg, #ff8c00, #ff4d4d);
+  width: 85px;
+  height: 75px;
+  border-radius: 4px 0 0 4px;
+  position: absolute;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.3s;
+  flex-shrink: 0;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.payment-alert-container .right-side {
+  width: calc(100% - 85px);
+  margin-left: 85px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: pointer;
+  justify-content: space-between;
+  white-space: nowrap;
+  transition: 0.3s;
+  border-radius: 0 5px 5px 0;
+}
+
+.payment-alert-container .right-side:hover {
+  background-color: #ffecd1;
+}
+
+.payment-alert-container .arrow {
+  width: 14px;
+  height: 14px;
+  margin-right: 12px;
+  fill: #ff8c00;
+}
+
+.payment-alert-container .new {
+  font-size: 15px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+  margin-left: 12px;
+  color: #333;
+}
+
+.payment-alert-container .card {
+  width: 48px;
+  height: 30px;
+  background-color: #ffb366;
+  border-radius: 4px;
+  position: absolute;
+  display: flex;
+  z-index: 10;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 5px 5px 5px -2px rgba(255, 77, 77, 0.4);
+}
+
+.payment-alert-container .card-line {
+  width: 42px;
+  height: 8px;
+  background-color: #ffcc99;
+  border-radius: 1px;
+  margin-top: 4px;
+}
+
+@media only screen and (max-width: 480px) {
+  .payment-alert-container {
+    transform: scale(0.9);
+  }
+
+  .payment-alert-container:hover {
+    transform: scale(0.95);
+  }
+
+  .payment-alert-container .new {
+    font-size: 13px;
+  }
+}
+
+.payment-alert-container .buttons {
+  width: 5px;
+  height: 5px;
+  background-color: #cc4b00;
+  box-shadow:
+    0 -6px 0 0 #992d00,
+    0 6px 0 0 #ff6a1a;
+  border-radius: 50%;
+  margin-top: 3px;
+  transform: rotate(90deg);
+  margin: 6px 0 0 -18px;
+}
+
+.payment-alert-container:hover .card {
+  animation: slide-top 0.9s cubic-bezier(0.68, -0.55, 0.265, 1.55) both;
+}
+
+.payment-alert-container:hover .post {
+  animation: slide-post 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes slide-top {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-45px) rotate(90deg);
+  }
+  60% {
+    transform: translateY(-45px) rotate(90deg);
+  }
+  100% {
+    transform: translateY(-5px) rotate(90deg);
+  }
+}
+
+.payment-alert-container .post {
+  width: 42px;
+  height: 50px;
+  background-color: #f5f5f5;
+  position: absolute;
+  z-index: 11;
+  bottom: 6px;
+  top: 75px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.payment-alert-container .post-line {
+  width: 32px;
+  height: 5px;
+  background-color: #666;
+  position: absolute;
+  border-radius: 0 0 2px 2px;
+  right: 5px;
+  top: 5px;
+}
+
+.payment-alert-container .post-line:before {
+  content: "";
+  position: absolute;
+  width: 32px;
+  height: 5px;
+  background-color: #888;
+  top: -5px;
+}
+
+.payment-alert-container .screen {
+  width: 32px;
+  height: 15px;
+  background-color: #ffffff;
+  position: absolute;
+  top: 14px;
+  right: 5px;
+  border-radius: 2px;
+}
+
+.payment-alert-container .numbers {
+  width: 7px;
+  height: 7px;
+  background-color: #999;
+  box-shadow:
+    0 -11px 0 0 #999,
+    0 11px 0 0 #999;
+  border-radius: 1px;
+  position: absolute;
+  transform: rotate(90deg);
+  left: 17px;
+  top: 34px;
+}
+
+.payment-alert-container .numbers-line2 {
+  width: 7px;
+  height: 7px;
+  background-color: #bbb;
+  box-shadow:
+    0 -11px 0 0 #bbb,
+    0 11px 0 0 #bbb;
+  border-radius: 1px;
+  position: absolute;
+  transform: rotate(90deg);
+  left: 17px;
+  top: 45px;
+}
+
+@keyframes slide-post {
+  50% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-45px);
+  }
+}
+
+.payment-alert-container .icon {
+  position: absolute;
+  font-size: 11px;
+  font-weight: bold;
+  font-family: "Inter", sans-serif;
+  width: 100%;
+  left: 0;
+  top: 0;
+  color: #d32f2f;
+  text-align: center;
+}
+
+.payment-alert-container:hover .icon {
+  animation: fade-in-fwd 0.3s 0.7s backwards;
+}
+
+@keyframes fade-in-fwd {
+  0% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
