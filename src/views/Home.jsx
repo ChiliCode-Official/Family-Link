@@ -35,6 +35,20 @@ function Home() {
         const localNickname = localStorage.getItem('familyNickname');
         if (localNickname) {
           setNickname(localNickname);
+          // Sync existing local nickname to Firestore in case it hasn't been uploaded yet
+          try {
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists() || !userDoc.data().nickname) {
+              await setDoc(userDocRef, {
+                nickname: localNickname,
+                displayName: currentUser.displayName || '',
+                photoURL: currentUser.photoURL || ''
+              }, { merge: true });
+            }
+          } catch (e) {
+            console.error("Error auto-syncing nickname to Firestore:", e);
+          }
         } else {
           // If not in localStorage, fetch from Firestore
           try {
