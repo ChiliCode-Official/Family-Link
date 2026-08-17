@@ -200,10 +200,13 @@ function ScheduleView() {
           overflow-x: auto;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
-          padding: 16px 24px 40px;
+          padding: 16px 16px 40px;
+          width: 100%;
+          box-sizing: border-box;
         }
         .grid-inner {
-          min-width: 800px;
+          width: 100%;
+          min-width: 850px;
           background: var(--theme-surface, #ffffff);
           border-radius: 24px;
           box-shadow: 0 10px 40px rgba(0,0,0,0.04);

@@ -49,7 +49,7 @@ export const applyTheme = (theme, accentColor) => {
 
 function App() {
   useEffect(() => {
-    const savedTheme = localStorage.getItem('familyTheme') || 'light';
+    const savedTheme = localStorage.getItem('familyTheme') || 'dark';
     const savedAccent = localStorage.getItem('familyAccent') || '#006493';
     applyTheme(savedTheme, savedAccent);
   }, []);

@@ -16,7 +16,7 @@ function Home() {
 
   // Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [themeMode, setThemeMode] = useState(localStorage.getItem('familyTheme') || 'light');
+  const [themeMode, setThemeMode] = useState(localStorage.getItem('familyTheme') || 'dark');
   const [accentColor, setAccentColor] = useState(localStorage.getItem('familyAccent') || '#006493');
 
   // Month selector
@@ -124,7 +124,7 @@ function Home() {
   const nextEvent = events.length > 0 ? events[0] : null;
 
   return (
-    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, backgroundColor: 'var(--theme-bg, var(--md-sys-color-background))' }}>
+    <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, backgroundColor: 'var(--theme-bg, var(--md-sys-color-background))', width: '100%', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
       {/* Header */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 style={{ margin: 0, fontSize: '28px', color: 'var(--theme-text, var(--md-sys-color-on-background))' }}>Hola, {nickname || (user ? user.displayName?.split(' ')[0] : 'Familia')}</h1>
@@ -221,7 +221,7 @@ function Home() {
             border-radius: 2rem;
             padding: 1.5rem;
             width: 100%;
-            max-width: 380px;
+            max-width: 800px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
             margin: 0 auto;
             color: var(--theme-accent-text, #1a1a1a);
@@ -425,7 +425,7 @@ function Home() {
       </div>
 
       {/* Main Menu */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '16px', width: '100%' }}>
         <button 
           className="md-card md-card-elevated" 
           style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
@@ -450,7 +450,7 @@ function Home() {
 
         <button 
           className="md-card md-card-elevated" 
-          style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px', gridColumn: '1 / -1' }}
+          style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
           onClick={() => navigate('/groceries')}
         >
           <div style={{ background: 'var(--md-sys-color-primary-container)', padding: '12px', borderRadius: '50%' }}>
