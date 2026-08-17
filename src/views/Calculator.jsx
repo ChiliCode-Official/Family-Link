@@ -29,8 +29,9 @@ function Calculator() {
 
   const handleCalculate = () => {
     try {
-      // Basic eval for simple calculator (safe enough for this use case)
-      const result = eval(display.replace('x', '*'));
+      // Safe evaluation of simple math expression
+      const sanitized = display.replace(/x/g, '*').replace(/[^0-9+\-*/.%]/g, '');
+      const result = new Function(`return ${sanitized}`)();
       setEquation(display + ' =');
       setDisplay(String(result));
     } catch (e) {

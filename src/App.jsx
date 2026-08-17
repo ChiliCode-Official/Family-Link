@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './views/Home';
 import ScheduleSelection from './views/ScheduleSelection';
 import ScheduleView from './views/ScheduleView';
