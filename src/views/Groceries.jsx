@@ -6,6 +6,14 @@ import '../styles/checkbox.css';
 
 const HOUSES = ['General', 'Casa Mamá', 'Casa Tlal', 'Casa Tía'];
 
+const DICTIONARY = [
+  'Leche', 'Huevo', 'Pan', 'Tortillas', 'Manzanas', 'Plátanos', 'Queso', 'Jamón', 
+  'Pollo', 'Carne', 'Pescado', 'Arroz', 'Frijoles', 'Papel Higiénico', 'Jabón', 
+  'Detergente', 'Café', 'Azúcar', 'Sal', 'Aceite', 'Refresco', 'Agua', 'Cereal', 
+  'Yogur', 'Pasta', 'Atún', 'Cebolla', 'Jitomate', 'Limón', 'Aguacate', 'Ajo', 
+  'Papas', 'Zanahorias', 'Lechuga', 'Cerveza', 'Vino', 'Galletas', 'Pan dulce'
+];
+
 function Groceries() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
@@ -14,10 +22,27 @@ function Groceries() {
   const [activeHouseFilter, setActiveHouseFilter] = useState('Todas');
   const [nickname, setNickname] = useState(localStorage.getItem('familyNickname') || '');
   
+  // Suggestions state
+  const [suggestions, setSuggestions] = useState([]);
+  
   // Undo Toast state
   const [lastDeletedItem, setLastDeletedItem] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastTimeoutId, setToastTimeoutId] = useState(null);
+
+  // Suggestion filtering hook
+  useEffect(() => {
+    const text = newItemText.trim();
+    if (!text) {
+      setSuggestions([]);
+      return;
+    }
+    const filtered = DICTIONARY.filter(item => 
+      item.toLowerCase().startsWith(text.toLowerCase()) &&
+      item.toLowerCase() !== text.toLowerCase()
+    );
+    setSuggestions(filtered);
+  }, [newItemText]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'groceries'), snapshot => {
@@ -192,6 +217,43 @@ function Groceries() {
             Añadir
           </button>
         </div>
+        
+        {/* Suggestion list */}
+        {suggestions.length > 0 && (
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px', overflowX: 'auto', paddingBottom: '4px', width: '100%' }}>
+            {suggestions.map(sug => (
+              <button
+                key={sug}
+                onClick={() => {
+                  setNewItemText(sug);
+                  setSuggestions([]);
+                }}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '16px',
+                  border: '1.5px solid var(--theme-accent, #006493)',
+                  backgroundColor: 'rgba(0, 100, 147, 0.1)',
+                  color: 'var(--theme-accent, #00baec)',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--theme-accent, #006493)';
+                  e.currentTarget.style.color = '#ffffff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(0, 100, 147, 0.1)';
+                  e.currentTarget.style.color = 'var(--theme-accent, #00baec)';
+                }}
+              >
+                💡 {sug}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* List content */}
