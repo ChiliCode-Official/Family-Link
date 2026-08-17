@@ -55,9 +55,27 @@ function Calculator() {
 
   const handleCalculate = () => {
     try {
-      // Replace x with * and % with /100 to evaluate correctly
-      let sanitized = display.replace(/x/g, '*').replace(/%/g, '/100');
+      let expr = display.replace(/x/g, '*');
       
+      // Clean up any trailing operators at the end of the expression
+      while (['+', '-', '*', '/', '%'].includes(expr.trim().slice(-1))) {
+        expr = expr.trim().slice(0, -1);
+      }
+
+      if (!expr) {
+        setDisplay('0');
+        return;
+      }
+
+      // 1. Match addition/subtraction of percentage (e.g. 50+10% => 50+(50*10/100))
+      let sanitized = expr.replace(/(\d+(?:\.\d+)?)\s*([\+\-])\s*(\d+(?:\.\d+)?)\s*%/g, "$1$2($1*$3/100)");
+      
+      // 2. Match multiplication/division of percentage (e.g. 100*10% => 100*(10/100))
+      sanitized = sanitized.replace(/(\d+(?:\.\d+)?)\s*([\*\/])\s*(\d+(?:\.\d+)?)\s*%/g, "$1$2($3/100)");
+      
+      // 3. Match any remaining standalone percentage (e.g. 10% => (10/100))
+      sanitized = sanitized.replace(/(\d+(?:\.\d+)?)\s*%/g, "($1/100)");
+
       const result = new Function(`return ${sanitized}`)();
       if (result === undefined || isNaN(result) || !isFinite(result)) {
         throw new Error();
