@@ -354,7 +354,7 @@ function Calendar() {
             {/* Assigned to / Creator section */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '16px', backgroundColor: 'var(--theme-bg, rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.04)' }}>
               <img 
-                src={selectedEvent.creatorPic || auth.currentUser?.photoURL || `https://ui-avatars.com/api/?name=${selectedEvent.assignedTo || 'Familia'}&background=random`} 
+                src={selectedEvent.creatorPic || `https://ui-avatars.com/api/?name=${selectedEvent.creatorName || 'Familia'}&background=random`} 
                 alt="Creator Profile" 
                 style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid var(--theme-accent, #006493)', objectFit: 'cover' }} 
               />
@@ -363,7 +363,7 @@ function Calendar() {
                   Asignado a: {selectedEvent.assignedTo || 'Familia'}
                 </span>
                 <span style={{ fontSize: '12px', color: 'var(--theme-text-variant, #aaaaaa)' }}>
-                  Creado por: {selectedEvent.creatorName || 'Usuario'}
+                  Creado por: {selectedEvent.creatorName || 'Familia'}
                 </span>
               </div>
             </div>
