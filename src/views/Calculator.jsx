@@ -158,23 +158,23 @@ function Calculator() {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#000000', color: '#ffffff' }}>
-      <header style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: '#1c1c1e' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', maxHeight: '100dvh', backgroundColor: '#000000', color: '#ffffff', overflow: 'hidden' }}>
+      <header style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: '#1c1c1e', flexShrink: 0 }}>
         <button className="back-btn" style={{ padding: '0', width: '40px', height: '40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#ffffff', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: '#ffffff' }}>Calculadora</h1>
+        <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold', color: '#ffffff' }}>Calculadora</h1>
       </header>
 
-      <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '20px', maxWidth: '400px', width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
+      <div style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '16px', maxWidth: '360px', width: '100%', margin: '0 auto', boxSizing: 'border-box', overflow: 'hidden' }}>
         
         {/* Display */}
-        <div style={{ textAlign: 'right', padding: '10px 20px', minHeight: '80px', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-          <div style={{ color: '#ffffff', fontSize: '64px', fontWeight: '300', wordBreak: 'break-all', letterSpacing: '-1px' }}>{display}</div>
+        <div style={{ textAlign: 'right', padding: '8px 12px', minHeight: '60px', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', flexShrink: 0 }}>
+          <div style={{ color: '#ffffff', fontSize: '56px', fontWeight: '300', wordBreak: 'break-all', letterSpacing: '-1px', lineHeight: '1.1' }}>{display}</div>
         </div>
 
         {/* Keypad */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', width: '100%', boxSizing: 'border-box' }}>
           {buttons.map(btn => {
             const isDigit = btn.type === 'digit';
             const isAction = btn.type === 'action';
@@ -204,10 +204,11 @@ function Calculator() {
                 }}
                 style={{
                   gridColumn: btn.double ? 'span 2' : 'span 1',
-                  height: '75px',
-                  fontSize: '28px',
+                  height: btn.double ? 'auto' : '100%',
+                  aspectRatio: btn.double ? '2.15/1' : '1/1',
+                  fontSize: '24px',
                   fontWeight: '500',
-                  borderRadius: btn.double ? '40px' : '50%',
+                  borderRadius: btn.double ? '35px' : '50%',
                   border: 'none',
                   backgroundColor: bg,
                   color: color,
@@ -215,7 +216,7 @@ function Calculator() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: btn.double ? 'flex-start' : 'center',
-                  paddingLeft: btn.double ? '28px' : '0',
+                  paddingLeft: btn.double ? '24px' : '0',
                   transition: 'all 0.15s ease',
                   userSelect: 'none'
                 }}
