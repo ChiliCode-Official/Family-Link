@@ -289,81 +289,87 @@ function Groceries() {
           <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '260px', padding: '20px 0' }}>
             <style>{`
               .cat-loader {
-                width: fit-content;
-                height: fit-content;
+                width: 100%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                margin-top: 15px;
               }
               .cat-wrapper {
-                width: fit-content;
-                height: fit-content;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 align-items: center;
+                position: relative;
               }
               .catContainer {
-                width: 100%;
-                height: fit-content;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 position: relative;
+                width: 80px;
+                height: 74px;
+                margin-bottom: -2px;
               }
               .catbody {
                 width: 80px;
+                height: auto;
               }
               .tail {
                 position: absolute;
                 width: 17px;
-                top: 50%;
-                animation: cat-tail 0.5s ease-in infinite alternate-reverse;
-                transform-origin: top;
+                height: auto;
+                right: 2px;
+                top: 40px;
+                animation: cat-tail 0.6s ease-in-out infinite alternate;
+                transform-origin: 50% 0%;
               }
               @keyframes cat-tail {
                 0% {
-                  transform: rotateZ(60deg);
-                }
-                50% {
-                  transform: rotateZ(0deg);
+                  transform: rotate(45deg);
                 }
                 100% {
-                  transform: rotateZ(-20deg);
+                  transform: rotate(-15deg);
                 }
               }
               .wall {
                 width: 260px;
+                max-width: 90vw;
+                height: auto;
               }
               .cat-text {
                 display: flex;
                 flex-direction: column;
-                width: 50px;
                 position: absolute;
-                margin: 0px 0px 100px 120px;
+                left: 72px;
+                top: -15px;
+                pointer-events: none;
               }
               .cat-zzz {
-                color: var(--theme-text, #ffffff);
+                color: var(--theme-accent, #006493);
                 font-weight: 700;
-                font-size: 15px;
+                font-size: 14px;
                 animation: cat-zzz-anim 2s linear infinite;
               }
               .cat-bigzzz {
-                color: var(--theme-text, #ffffff);
+                color: var(--theme-accent, #006493);
                 font-weight: 700;
-                font-size: 25px;
-                margin-left: 10px;
-                animation: cat-zzz-anim 2.3s linear infinite;
+                font-size: 22px;
+                margin-left: 12px;
+                animation: cat-zzz-anim 2.3s linear infinite 0.4s;
               }
               @keyframes cat-zzz-anim {
                 0% {
-                  color: transparent;
+                  opacity: 0;
+                  transform: translateY(4px) scale(0.8);
                 }
                 50% {
-                  color: var(--theme-text, #ffffff);
+                  opacity: 1;
+                  transform: translateY(-2px) scale(1.1);
                 }
                 100% {
-                  color: transparent;
+                  opacity: 0;
+                  transform: translateY(-8px) scale(1);
                 }
               }
             `}</style>
