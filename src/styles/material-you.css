@@ -163,18 +163,84 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--md-sys-elevation-2);
 }
 
-/* Container limits for PWA feel */
+/* Container layout for PWA feel on mobile, wide dashboard on tablets/PC */
 .app-container {
-  max-width: 600px;
-  margin: 0 auto;
+  width: 100%;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-@media (min-width: 601px) {
+@media (min-width: 768px) {
   .app-container {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    flex-direction: row;
+    padding: 0;
+  }
+  
+  .app-sidebar {
+    width: 80px;
+    background-color: var(--theme-surface, #1e1e1e);
+    border-right: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    gap: 16px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    box-sizing: border-box;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  
+  .app-sidebar-item {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--theme-text, #ffffff);
+    background: transparent;
+    border: none;
+    text-decoration: none;
+  }
+  
+  .app-sidebar-item:hover {
+    background-color: var(--theme-surface-variant, #2c2c2c);
+    transform: scale(1.05);
+  }
+  
+  .app-sidebar-item.active {
+    background-color: var(--theme-accent, #006493);
+    color: var(--theme-accent-text, #ffffff);
+    box-shadow: 0 4px 12px rgba(0, 100, 147, 0.3);
+  }
+  
+  .main-content {
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 767px) {
+  .app-sidebar {
+    display: none;
+  }
+  
+  .main-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
   }
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import Home from './views/Home';
 import ScheduleSelection from './views/ScheduleSelection';
 import ScheduleView from './views/ScheduleView';
@@ -47,6 +47,34 @@ export const applyTheme = (theme, accentColor) => {
   }
 };
 
+function Sidebar() {
+  const location = useLocation();
+  const path = location.pathname;
+
+  return (
+    <aside className="app-sidebar">
+      <Link to="/" className={`app-sidebar-item ${path === '/' ? 'active' : ''}`} title="Inicio">
+        🏠
+      </Link>
+      <Link to="/schedule" className={`app-sidebar-item ${path.startsWith('/schedule') ? 'active' : ''}`} title="Horarios">
+        ⏰
+      </Link>
+      <Link to="/calendar" className={`app-sidebar-item ${path === '/calendar' ? 'active' : ''}`} title="Calendario">
+        📅
+      </Link>
+      <Link to="/groceries" className={`app-sidebar-item ${path === '/groceries' ? 'active' : ''}`} title="Lista del Súper">
+        🛒
+      </Link>
+      <Link to="/calculator" className={`app-sidebar-item ${path === '/calculator' ? 'active' : ''}`} title="Calculadora">
+        🧮
+      </Link>
+      <Link to="/debts" className={`app-sidebar-item ${path === '/debts' ? 'active' : ''}`} title="Cobrar/Deudas">
+        💸
+      </Link>
+    </aside>
+  );
+}
+
 function App() {
   useEffect(() => {
     const savedTheme = localStorage.getItem('familyTheme') || 'dark';
@@ -57,15 +85,18 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/schedule" element={<ScheduleSelection />} />
-          <Route path="/schedule/:person" element={<ScheduleView />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/groceries" element={<Groceries />} />
-          <Route path="/calculator" element={<Calculator />} />
-          <Route path="/debts" element={<Debts />} />
-        </Routes>
+        <Sidebar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/schedule" element={<ScheduleSelection />} />
+            <Route path="/schedule/:person" element={<ScheduleView />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/groceries" element={<Groceries />} />
+            <Route path="/calculator" element={<Calculator />} />
+            <Route path="/debts" element={<Debts />} />
+          </Routes>
+        </main>
       </div>
     </Router>
   );
