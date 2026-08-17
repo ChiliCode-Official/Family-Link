@@ -125,10 +125,27 @@ function Groceries() {
   });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--theme-bg, #121212)', color: 'var(--theme-text, #ffffff)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', backgroundColor: 'var(--theme-bg, #121212)', color: 'var(--theme-text, #ffffff)', overflow: 'hidden' }}>
       {/* Header */}
-      <header style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid var(--border, rgba(255,255,255,0.1))', flexShrink: 0 }}>
-        <button className="back-btn" style={{ padding: '0' }} onClick={() => navigate('/')}>
+      <header style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
+        <button 
+          className="back-btn" 
+          onClick={() => navigate('/')}
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.08)',
+            background: 'transparent',
+            color: 'var(--theme-text, #ffffff)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            padding: 0
+          }}
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
         <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--theme-text, #ffffff)' }}>Lista del Súper</h1>
@@ -167,7 +184,7 @@ function Groceries() {
       </div>
 
       {/* Input controls */}
-      <div style={{ padding: '16px 24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid var(--border, rgba(255,255,255,0.1))', flexShrink: 0 }}>
+      <div style={{ padding: '16px 24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
           <input 
             type="text" 
@@ -179,7 +196,7 @@ function Groceries() {
               flex: 1, 
               padding: '12px 16px', 
               borderRadius: '24px', 
-              border: '1.5px solid var(--border, rgba(255,255,255,0.15))', 
+              border: '1.5px solid rgba(255,255,255,0.08)', 
               fontSize: '16px', 
               outline: 'none',
               backgroundColor: 'var(--theme-bg, #121212)',
@@ -190,26 +207,34 @@ function Groceries() {
           />
           
           {/* House selector dropdown */}
-          <select
-            value={selectedHouse}
-            onChange={(e) => setSelectedHouse(e.target.value)}
-            style={{
-              padding: '12px 16px',
-              borderRadius: '24px',
-              border: '1.5px solid var(--border, rgba(255,255,255,0.15))',
-              backgroundColor: 'var(--theme-bg, #121212)',
-              color: 'var(--theme-text, #ffffff)',
-              fontSize: '14px',
-              fontWeight: '600',
-              outline: 'none',
-              cursor: 'pointer',
-              flexShrink: 0
-            }}
-          >
-            {HOUSES.map(house => (
-              <option key={house} value={house}>{house}</option>
-            ))}
-          </select>
+          <div style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
+            <select
+              value={selectedHouse}
+              onChange={(e) => setSelectedHouse(e.target.value)}
+              style={{
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                padding: '12px 36px 12px 16px',
+                borderRadius: '24px',
+                border: '1.5px solid rgba(255,255,255,0.08)',
+                backgroundColor: 'var(--theme-bg, #121212)',
+                color: 'var(--theme-text, #ffffff)',
+                fontSize: '14px',
+                fontWeight: '600',
+                outline: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {HOUSES.map(house => (
+                <option key={house} value={house}>{house}</option>
+              ))}
+            </select>
+            <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--theme-text-variant, #888)', display: 'flex', alignItems: 'center' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
 
           <button 
             className="md-btn md-btn-primary" 
@@ -277,8 +302,9 @@ function Groceries() {
               transition: 'opacity 0.3s',
               backgroundColor: 'var(--theme-surface, #1e1e1e)',
               padding: '16px',
-              borderRadius: '16px',
-              border: '1px solid var(--border, rgba(255,255,255,0.05))',
+              borderRadius: '20px',
+              border: 'none',
+              boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
               position: 'relative'
             }}
           >
