@@ -5,8 +5,8 @@ import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc } from 'fi
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 const HOURS = [
-  '07:00', '08:00', '09:00', '10:00', '11:00', 
-  '12:00', '13:00', '14:00', '15:00', '16:00'
+  '07:00', '07:30', '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+  '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
 ];
 
 function ScheduleView() {
@@ -19,6 +19,9 @@ function ScheduleView() {
   const [formData, setFormData] = useState({ subject: '', room: '', endTime: '' });
   const [currentTime, setCurrentTime] = useState(new Date());
   const [zoom, setZoom] = useState(1.0);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [touchStartDist, setTouchStartDist] = useState(0);
+  const [touchStartZoom, setTouchStartZoom] = useState(1.0);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -66,12 +69,25 @@ function ScheduleView() {
     }
   }
 
+  const timeToVal = (t) => {
+    if (!t) return 7.0;
+    const [h, m] = t.split(':').map(Number);
+    return h + (m === 30 ? 0.5 : 0);
+  };
+
+  const valToTime = (v) => {
+    const h = Math.floor(v);
+    const m = v % 1 === 0.5 ? '30' : '00';
+    return `${h < 10 ? '0' : ''}${h}:${m}`;
+  };
+
   const handleCellClick = (day, time, existingItem) => {
     if (existingItem === 'blocked') return;
     setSelectedSlot({ day, time, existingId: existingItem ? existingItem.id : null });
+    setIsConfirmingDelete(false);
     
-    let defaultEndTime = `${parseInt(time.split(':')[0]) + 1}:00`;
-    if (defaultEndTime.length === 4) defaultEndTime = `0${defaultEndTime}`;
+    let defaultEndTimeVal = timeToVal(time) + 1.0;
+    let defaultEndTime = valToTime(defaultEndTimeVal);
 
     setFormData({
       subject: existingItem ? existingItem.subject : '',
@@ -98,35 +114,66 @@ function ScheduleView() {
   };
 
   const handleDeleteSlot = async () => {
+    if (!isConfirmingDelete) {
+      setIsConfirmingDelete(true);
+      return;
+    }
     if (selectedSlot.existingId) {
       await deleteDoc(doc(db, 'schedules', selectedSlot.existingId));
     }
     setIsModalOpen(false);
+    setIsConfirmingDelete(false);
   };
 
   const gridCells = {};
   scheduleData.forEach(item => {
-    const startHour = parseInt((item.startTime || item.time).split(':')[0]);
-    const endHour = item.endTime ? parseInt(item.endTime.split(':')[0]) : startHour + 1;
-    const duration = endHour - startHour;
+    const startVal = timeToVal(item.startTime || item.time);
+    const endVal = item.endTime ? timeToVal(item.endTime) : startVal + 1.0;
+    const durationBlocks = (endVal - startVal) * 2;
     
-    const startKey = `${item.day}-${startHour < 10 ? `0${startHour}:00` : `${startHour}:00`}`;
-    gridCells[startKey] = { ...item, duration, isStart: true };
+    const startKey = `${item.day}-${valToTime(startVal)}`;
+    gridCells[startKey] = { ...item, duration: durationBlocks, isStart: true };
 
-    for (let i = 1; i < duration; i++) {
-      const spanHour = startHour + i;
-      const spanKey = `${item.day}-${spanHour < 10 ? `0${spanHour}:00` : `${spanHour}:00`}`;
+    for (let i = 0.5; i < (endVal - startVal); i += 0.5) {
+      const spanKey = `${item.day}-${valToTime(startVal + i)}`;
       gridCells[spanKey] = 'blocked';
     }
   });
 
   const getEndTimeOptions = (startTime) => {
-    const start = parseInt(startTime.split(':')[0]);
+    const start = timeToVal(startTime);
     let opts = [];
-    for (let i = start + 1; i <= 17; i++) {
-      opts.push(i < 10 ? `0${i}:00` : `${i}:00`);
+    for (let v = start + 0.5; v <= 17.5; v += 0.5) {
+      opts.push(valToTime(v));
     }
     return opts;
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      setTouchStartDist(dist);
+      setTouchStartZoom(zoom);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && touchStartDist > 0) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const ratio = dist / touchStartDist;
+      const newZoom = Math.min(1.6, Math.max(0.6, touchStartZoom * ratio));
+      setZoom(newZoom);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStartDist(0);
   };
 
   return (
@@ -214,6 +261,24 @@ function ScheduleView() {
           border: 1px solid rgba(0,0,0,0.04);
           overflow: hidden;
         }
+        @media (orientation: landscape) and (max-device-width: 950px) {
+          .grid-inner {
+            min-width: 100% !important;
+            width: 100% !important;
+          }
+          .grid-wrapper {
+            padding: 8px 8px 20px;
+          }
+          .hour-row {
+            height: var(--row-height, 42px);
+          }
+          .class-title {
+            font-size: calc(11px * var(--zoom-factor, 1));
+          }
+          .class-meta {
+            font-size: calc(9px * var(--zoom-factor, 1));
+          }
+        }
         .days-header {
           display: flex;
           background: rgba(0,0,0,0.01);
@@ -244,7 +309,7 @@ function ScheduleView() {
         }
         .hour-row {
           display: flex;
-          height: var(--row-height, 90px);
+          height: var(--row-height, 55px);
           border-bottom: 1px solid rgba(0,0,0,0.04);
           position: relative;
         }
@@ -491,8 +556,13 @@ function ScheduleView() {
         </div>
       )}
 
-      <div className="grid-wrapper">
-        <div className="grid-inner" style={{ '--row-height': `${90 * zoom}px`, '--zoom-factor': zoom }}>
+      <div 
+        className="grid-wrapper"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <div className="grid-inner" style={{ '--row-height': `${55 * zoom}px`, '--zoom-factor': zoom }}>
           <div className="days-header">
             <div className="corner-cell"></div>
             {DAYS.map(day => (
@@ -584,14 +654,27 @@ function ScheduleView() {
               <input className="styled-input" placeholder="Ej. Edificio B, Aula 102" value={formData.room} onChange={e => setFormData({...formData, room: e.target.value})} />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '12px', width: '100%' }}>
               {selectedSlot.existingId ? (
-                <button className="btn btn-danger" onClick={handleDeleteSlot}>Borrar</button>
+                isConfirmingDelete ? (
+                  <div style={{ display: 'flex', gap: '8px', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '14px', color: '#ff4b4b', fontWeight: 'bold' }}>⚠️ ¿Borrar clase?</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button className="btn btn-secondary" onClick={() => setIsConfirmingDelete(false)}>No</button>
+                      <button className="btn btn-danger" onClick={handleDeleteSlot}>Sí, borrar</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button className="btn btn-danger" onClick={handleDeleteSlot}>Borrar</button>
+                )
               ) : <div></div>}
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handleSaveSlot}>Guardar</button>
-              </div>
+              
+              {!isConfirmingDelete && (
+                <div style={{ display: 'flex', gap: '12px', marginLeft: 'auto' }}>
+                  <button className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>Cancelar</button>
+                  <button className="btn btn-primary" onClick={handleSaveSlot}>Guardar</button>
+                </div>
+              )}
             </div>
           </div>
         </div>

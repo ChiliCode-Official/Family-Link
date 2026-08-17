@@ -26,6 +26,7 @@ function Calendar() {
   
   const [tags, setTags] = useState([]);
   const [events, setEvents] = useState([]);
+  const [registeredUsers, setRegisteredUsers] = useState([]);
 
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [isEventInfoOpen, setIsEventInfoOpen] = useState(false);
@@ -48,9 +49,15 @@ function Calendar() {
       setEvents(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
+    // Listen to Firebase registered users
+    const unsubUsers = onSnapshot(collection(db, 'users'), snapshot => {
+      setRegisteredUsers(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
     return () => {
       unsubTags();
       unsubEvents();
+      unsubUsers();
     };
   }, []);
 
@@ -372,9 +379,16 @@ function Calendar() {
             {String(newEvent.tagId) === 'auto' && (
               <div style={{ backgroundColor: 'var(--tag-yellow)', color: 'var(--tag-on-yellow)', padding: '12px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ fontWeight: '500', fontSize: '14px' }}>🚘 Asignar responsable de recoger:</div>
-                <select value={newEvent.assignedTo} onChange={e => setNewEvent({...newEvent, assignedTo: e.target.value})} style={{ padding: '8px', borderRadius: '4px', border: 'none' }}>
+                 <select value={newEvent.assignedTo} onChange={e => setNewEvent({...newEvent, assignedTo: e.target.value})} style={{ padding: '8px', borderRadius: '4px', border: 'none', width: '100%' }}>
                   <option value="">Selecciona alguien...</option>
-                  {FAMILY_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)}
+                  {registeredUsers.length > 0 ? (
+                    registeredUsers.map(u => {
+                      const name = u.nickname || u.displayName || 'Usuario';
+                      return <option key={u.id} value={name}>{name}</option>;
+                    })
+                  ) : (
+                    FAMILY_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)
+                  )}
                 </select>
               </div>
             )}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, setDoc } from 'firebase/firestore';
 import { applyTheme } from '../App';
 import '../styles/payment-alert.css';
 
@@ -23,15 +23,35 @@ function Home() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [isMonthMenuOpen, setIsMonthMenuOpen] = useState(false);
   const [events, setEvents] = useState([]);
+  const [userSchedule, setUserSchedule] = useState([]);
 
   const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
   const shortMonthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
-      if (currentUser && !localStorage.getItem('familyNickname')) {
-        setIsPromptingNickname(true);
+      if (currentUser) {
+        const localNickname = localStorage.getItem('familyNickname');
+        if (localNickname) {
+          setNickname(localNickname);
+        } else {
+          // If not in localStorage, fetch from Firestore
+          try {
+            const userDocRef = doc(db, 'users', currentUser.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists() && userDoc.data().nickname) {
+              const firestoreNickname = userDoc.data().nickname;
+              localStorage.setItem('familyNickname', firestoreNickname);
+              setNickname(firestoreNickname);
+            } else {
+              setIsPromptingNickname(true);
+            }
+          } catch (e) {
+            console.error("Error fetching user nickname:", e);
+            setIsPromptingNickname(true);
+          }
+        }
       }
     });
     return () => unsubscribe();
@@ -50,6 +70,20 @@ function Home() {
     return () => {
       unsubDebts();
     };
+  }, [nickname]);
+
+  useEffect(() => {
+    if (!nickname) return;
+    const nameLower = nickname.toLowerCase();
+    if (nameLower === 'hannah' || nameLower === 'rodrigo') {
+      const q = query(collection(db, 'schedules'), where('person', '==', nameLower));
+      const unsub = onSnapshot(q, (snapshot) => {
+        setUserSchedule(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      });
+      return () => unsub();
+    } else {
+      setUserSchedule([]);
+    }
   }, [nickname]);
 
   useEffect(() => {
@@ -85,9 +119,19 @@ function Home() {
     }
   };
 
-  const saveNickname = () => {
-    if (nickname.trim()) {
-      localStorage.setItem('familyNickname', nickname.trim());
+  const saveNickname = async () => {
+    if (nickname.trim() && auth.currentUser) {
+      const trimmed = nickname.trim();
+      localStorage.setItem('familyNickname', trimmed);
+      try {
+        await setDoc(doc(db, 'users', auth.currentUser.uid), {
+          nickname: trimmed,
+          displayName: auth.currentUser.displayName || '',
+          photoURL: auth.currentUser.photoURL || ''
+        });
+      } catch (e) {
+        console.error("Error saving nickname to Firestore:", e);
+      }
       setIsPromptingNickname(false);
     }
   };
@@ -118,6 +162,38 @@ function Home() {
       }
     }
     return days;
+  };
+
+  const getNextClass = () => {
+    if (userSchedule.length === 0) return null;
+    
+    const DAYS_WEEK = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const currentDayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1;
+    const currentDayString = DAYS_WEEK[currentDayIndex];
+    const currentHourNum = today.getHours();
+    
+    const todaysClasses = userSchedule.filter(s => s.day === currentDayString);
+    const futureClassesToday = todaysClasses.filter(s => {
+      const startHour = parseInt((s.startTime || s.time).split(':')[0]);
+      const endHour = s.endTime ? parseInt(s.endTime.split(':')[0]) : startHour + 1;
+      return endHour > currentHourNum;
+    }).sort((a, b) => (a.startTime || a.time).localeCompare(b.startTime || b.time));
+    
+    if (futureClassesToday.length > 0) {
+      const startHour = parseInt((futureClassesToday[0].startTime || futureClassesToday[0].time).split(':')[0]);
+      return { ...futureClassesToday[0], isNow: startHour <= currentHourNum };
+    }
+    
+    // Look at future days
+    for (let i = 1; i <= 7; i++) {
+      const nextDayIdx = (currentDayIndex + i) % 7;
+      const nextDayStr = DAYS_WEEK[nextDayIdx];
+      const classesNextDay = userSchedule.filter(s => s.day === nextDayStr).sort((a, b) => (a.startTime || a.time).localeCompare(b.startTime || b.time));
+      if (classesNextDay.length > 0) {
+        return { ...classesNextDay[0], isNow: false, nextDayName: nextDayStr };
+      }
+    }
+    return null;
   };
 
   const carouselDays = getDaysForCarousel();
@@ -395,14 +471,39 @@ function Home() {
             )}
           </div>
 
-          <div className="calls-info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"></path>
-            </svg>
-            <span style={{ fontFamily: 'var(--md-sys-typescale-body-medium-font-family)' }}>
-              {events.length} {events.length === 1 ? 'evento' : 'eventos'} • {nextEvent ? nextEvent.title : 'Nada programado'}
-            </span>
-          </div>
+          {(() => {
+            const nextClass = getNextClass();
+            const isHannahOrRodrigo = nickname && (nickname.toLowerCase() === 'hannah' || nickname.toLowerCase() === 'rodrigo');
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '2rem' }}>
+                <div 
+                  className="calls-info" 
+                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: 0 }}
+                  onClick={() => navigate('/calendar')}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z"></path>
+                  </svg>
+                  <span style={{ fontFamily: 'var(--md-sys-typescale-body-medium-font-family)', marginLeft: '0.5rem', fontSize: '0.875rem' }}>
+                    {events.length} {events.length === 1 ? 'evento' : 'eventos'} • {nextEvent ? nextEvent.title : 'Nada programado'}
+                  </span>
+                </div>
+
+                {isHannahOrRodrigo && nextClass && (
+                  <div 
+                    className="calls-info" 
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', marginBottom: 0 }}
+                    onClick={() => navigate(`/schedule/${nickname.toLowerCase()}`)}
+                  >
+                    <span style={{ fontSize: '20px' }}>⏰</span>
+                    <span style={{ fontFamily: 'var(--md-sys-typescale-body-medium-font-family)', marginLeft: '0.5rem', fontSize: '0.875rem' }}>
+                      {nextClass.isNow ? '🔴 En curso' : '📅 Siguiente clase'}: {nextClass.subject} ({nextClass.startTime || nextClass.time}h) {nextClass.room ? `en ${nextClass.room}` : ''}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="date-nav-and-indicators">
             <div className="date-nav-container" style={{ fontFamily: 'var(--md-sys-typescale-body-medium-font-family)' }}>
