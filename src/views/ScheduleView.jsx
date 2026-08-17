@@ -18,6 +18,7 @@ function ScheduleView() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [formData, setFormData] = useState({ subject: '', room: '', endTime: '' });
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [zoom, setZoom] = useState(1.0);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
@@ -243,7 +244,7 @@ function ScheduleView() {
         }
         .hour-row {
           display: flex;
-          height: 90px;
+          height: var(--row-height, 90px);
           border-bottom: 1px solid rgba(0,0,0,0.04);
           position: relative;
         }
@@ -335,14 +336,30 @@ function ScheduleView() {
           transform: translateY(-2px);
           box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         }
+         .class-card.is-now {
+          background: linear-gradient(135deg, #ff4b4b 0%, #d41e1e 100%);
+          box-shadow: 0 0 16px rgba(255, 75, 75, 0.4);
+          border: 2px solid #ffffff;
+          animation: pulseGlow 2s infinite ease-in-out;
+        }
+        .class-card.is-next {
+          background: linear-gradient(135deg, #8a2be2 0%, #4b0082 100%);
+          box-shadow: 0 6px 16px rgba(138, 43, 226, 0.3);
+          border: 1.5px solid rgba(255, 255, 255, 0.6);
+        }
+        @keyframes pulseGlow {
+          0% { box-shadow: 0 0 8px rgba(255, 75, 75, 0.4); }
+          50% { box-shadow: 0 0 20px rgba(255, 75, 75, 0.7); }
+          100% { box-shadow: 0 0 8px rgba(255, 75, 75, 0.4); }
+        }
         .class-title {
-          font-size: 13px;
+          font-size: calc(13px * var(--zoom-factor, 1));
           font-weight: 700;
           margin-bottom: 4px;
           line-height: 1.2;
         }
         .class-meta {
-          font-size: 11px;
+          font-size: calc(11px * var(--zoom-factor, 1));
           opacity: 0.9;
           font-weight: 500;
         }
@@ -445,7 +462,22 @@ function ScheduleView() {
         <button className="back-btn" onClick={() => navigate('/schedule')}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
-        <h1 className="schedule-title">Horario de {person}</h1>
+        <h1 className="schedule-title" style={{ textTransform: 'capitalize' }}>Horario de {person}</h1>
+        
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="back-btn" onClick={() => setZoom(Math.max(0.6, zoom - 0.1))} title="Alejar" style={{ fontSize: '14px' }}>
+            ➖
+          </button>
+          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--theme-text-variant, #666)', minWidth: '40px', textAlign: 'center' }}>
+            {Math.round(zoom * 100)}%
+          </span>
+          <button className="back-btn" onClick={() => setZoom(Math.min(1.6, zoom + 0.1))} title="Acercar" style={{ fontSize: '14px' }}>
+            ➕
+          </button>
+          <button className="back-btn" onClick={() => setZoom(1.0)} title="Restablecer" style={{ fontSize: '14px' }}>
+            ↺
+          </button>
+        </div>
       </header>
 
       {nextClass && (
@@ -455,12 +487,12 @@ function ScheduleView() {
           ) : (
             <><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> PRÓXIMA CLASE:</>
           )} 
-          {nextClass.subject} ({nextClass.startTime || nextClass.time}h) {nextClass.nextDayName ? `el ${nextClass.nextDayName}` : ''}
+          {nextClass.subject} ({nextClass.startTime || nextClass.time}h) {nextClass.room ? `en ${nextClass.room}` : ''} {nextClass.nextDayName ? `el ${nextClass.nextDayName}` : ''}
         </div>
       )}
 
       <div className="grid-wrapper">
-        <div className="grid-inner">
+        <div className="grid-inner" style={{ '--row-height': `${90 * zoom}px`, '--zoom-factor': zoom }}>
           <div className="days-header">
             <div className="corner-cell"></div>
             {DAYS.map(day => (
@@ -490,6 +522,12 @@ function ScheduleView() {
                   const existingItem = gridCells[cellKey];
                   const isCurrentCell = isCurrentHourRow && day === currentDayString;
                   
+                  // Timing detection for active/next class highlighting
+                  const startHour = existingItem && existingItem !== 'blocked' ? parseInt((existingItem.startTime || existingItem.time).split(':')[0]) : null;
+                  const endHour = existingItem && existingItem !== 'blocked' && existingItem.endTime ? parseInt(existingItem.endTime.split(':')[0]) : (startHour ? startHour + 1 : null);
+                  const isNow = existingItem && existingItem !== 'blocked' && day === currentDayString && currentHourNum >= startHour && currentHourNum < endHour;
+                  const isNext = existingItem && existingItem !== 'blocked' && nextClass && existingItem.id === nextClass.id && !isNow;
+                  
                   return (
                     <div 
                       key={cellKey} 
@@ -498,9 +536,15 @@ function ScheduleView() {
                       style={{ cursor: existingItem === 'blocked' ? 'default' : 'pointer' }}
                     >
                       {existingItem && existingItem !== 'blocked' && (
-                        <div className="class-card" style={{ height: `calc(${existingItem.duration * 100}% + ${(existingItem.duration - 1) * 1}px)` }}>
+                        <div className={`class-card ${isNow ? 'is-now' : ''} ${isNext ? 'is-next' : ''}`} style={{ height: `calc(${existingItem.duration * 100}% + ${(existingItem.duration - 1) * 1}px)` }}>
                           <div className="class-title">{existingItem.subject}</div>
-                          <div className="class-meta">{existingItem.startTime || existingItem.time} - {existingItem.endTime} • {existingItem.room}</div>
+                          <div className="class-meta" style={{ fontWeight: '600' }}>
+                            {isNow ? '🔴 En curso ' : isNext ? '⏰ Siguiente ' : ''}
+                            {existingItem.room ? `🏫 ${existingItem.room}` : ''}
+                          </div>
+                          <div className="class-meta" style={{ marginTop: '2px', opacity: 0.8 }}>
+                            🕒 {existingItem.startTime || existingItem.time} - {existingItem.endTime}
+                          </div>
                         </div>
                       )}
                     </div>
