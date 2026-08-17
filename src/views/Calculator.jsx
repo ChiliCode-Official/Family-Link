@@ -4,142 +4,226 @@ import { useNavigate } from 'react-router-dom';
 function Calculator() {
   const navigate = useNavigate();
   const [display, setDisplay] = useState('0');
-  const [equation, setEquation] = useState('');
+  const [tokens, setTokens] = useState([]);
+  const [isReset, setIsReset] = useState(false);
+  const [lastOperator, setLastOperator] = useState(null);
 
-  const handleInput = (val) => {
-    if (display === 'Error') {
-      setDisplay(val === '.' ? '0.' : val);
-      return;
-    }
-
-    const isOperator = (char) => ['+', '-', '*', '/', '%'].includes(char);
-    const lastChar = display[display.length - 1];
-
-    if (val === '.') {
-      const parts = display.split(/[\+\-\*\/]/);
-      const lastPart = parts[parts.length - 1];
-      if (lastPart.includes('.')) return;
-    }
-
-    if (isOperator(val)) {
-      if (isOperator(lastChar)) {
-        setDisplay(display.slice(0, -1) + val);
-      } else {
-        setDisplay(display + val);
+  const evaluateTokens = (tokensList) => {
+    let list = [...tokensList];
+    
+    // First pass: multiplication and division
+    for (let i = 0; i < list.length; i++) {
+      if (list[i] === '*' || list[i] === '/') {
+        const op = list[i];
+        const prev = parseFloat(list[i - 1]);
+        const next = parseFloat(list[i + 1]);
+        let res = 0;
+        if (op === '*') res = prev * next;
+        else res = next === 0 ? Infinity : prev / next;
+        
+        list.splice(i - 1, 3, res);
+        i--;
       }
+    }
+    
+    // Second pass: addition and subtraction
+    let result = parseFloat(list[0]);
+    for (let i = 1; i < list.length; i += 2) {
+      const op = list[i];
+      const next = parseFloat(list[i + 1]);
+      if (op === '+') result += next;
+      if (op === '-') result -= next;
+    }
+    
+    return result;
+  };
+
+  const handleDigit = (digit) => {
+    setLastOperator(null);
+    if (display === '0' || display === 'Error' || isReset) {
+      setDisplay(digit === '.' ? '0.' : digit);
+      setIsReset(false);
     } else {
-      if (display === '0') {
-        if (val === '.') {
-          setDisplay('0.');
-        } else {
-          setDisplay(val);
-        }
-      } else {
-        setDisplay(display + val);
-      }
+      if (digit === '.' && display.includes('.')) return;
+      setDisplay(display + digit);
     }
   };
 
-  const handleClearAll = () => {
+  const handleClear = () => {
     setDisplay('0');
-    setEquation('');
+    setTokens([]);
+    setIsReset(false);
+    setLastOperator(null);
   };
 
-  const handleBackspace = () => {
-    if (display.length > 1) {
-      setDisplay(display.slice(0, -1));
+  const handleToggleSign = () => {
+    setDisplay(String(parseFloat(display) * -1));
+  };
+
+  const handlePercent = () => {
+    const val = parseFloat(display);
+    let pctVal;
+    if (tokens.length > 0) {
+      const lastVal = tokens[tokens.length - 2];
+      const lastOp = tokens[tokens.length - 1];
+      if (lastOp === '+' || lastOp === '-') {
+        pctVal = lastVal * (val / 100);
+      } else {
+        pctVal = val / 100;
+      }
     } else {
-      setDisplay('0');
+      pctVal = val / 100;
     }
+    setDisplay(String(Number(pctVal.toFixed(8))));
+  };
+
+  const handleOperator = (op) => {
+    const val = parseFloat(display);
+    let newTokens = [...tokens, val];
+
+    // Highlight the clicked operator in Apple style
+    setLastOperator(op);
+
+    if (tokens.length > 0) {
+      const lastOp = tokens[tokens.length - 1];
+      // If we clicked +, -, *, or /, and they just changed their mind:
+      if (isReset) {
+        const updatedTokens = [...tokens];
+        updatedTokens[updatedTokens.length - 1] = op;
+        setTokens(updatedTokens);
+        return;
+      }
+    }
+
+    if (op === '+' || op === '-') {
+      // Evaluate everything up to now
+      const result = evaluateTokens(newTokens);
+      setDisplay(String(Number(result.toFixed(8))));
+      setTokens([result, op]);
+    } else {
+      // For * and /, check if the previous operator was also high-precedence
+      const lastOp = tokens[tokens.length - 1];
+      if (lastOp === '*' || lastOp === '/') {
+        const result = evaluateTokens(newTokens);
+        setDisplay(String(Number(result.toFixed(8))));
+        setTokens([result, op]);
+      } else {
+        setTokens([...tokens, val, op]);
+      }
+    }
+    setIsReset(true);
   };
 
   const handleCalculate = () => {
+    if (tokens.length === 0) return;
+    const val = parseFloat(display);
+    const finalTokens = [...tokens, val];
     try {
-      let expr = display.replace(/x/g, '*');
-      
-      // Clean up any trailing operators at the end of the expression
-      while (['+', '-', '*', '/', '%'].includes(expr.trim().slice(-1))) {
-        expr = expr.trim().slice(0, -1);
-      }
-
-      if (!expr) {
-        setDisplay('0');
-        return;
-      }
-
-      // 1. Match addition/subtraction of percentage (e.g. 50+10% => 50+(50*10/100))
-      let sanitized = expr.replace(/(\d+(?:\.\d+)?)\s*([\+\-])\s*(\d+(?:\.\d+)?)\s*%/g, "$1$2($1*$3/100)");
-      
-      // 2. Match multiplication/division of percentage (e.g. 100*10% => 100*(10/100))
-      sanitized = sanitized.replace(/(\d+(?:\.\d+)?)\s*([\*\/])\s*(\d+(?:\.\d+)?)\s*%/g, "$1$2($3/100)");
-      
-      // 3. Match any remaining standalone percentage (e.g. 10% => (10/100))
-      sanitized = sanitized.replace(/(\d+(?:\.\d+)?)\s*%/g, "($1/100)");
-
-      const result = new Function(`return ${sanitized}`)();
+      const result = evaluateTokens(finalTokens);
       if (result === undefined || isNaN(result) || !isFinite(result)) {
         throw new Error();
       }
-      setEquation(display + ' =');
       setDisplay(String(Number(result.toFixed(8))));
+      setTokens([]);
+      setIsReset(true);
+      setLastOperator(null);
     } catch (e) {
       setDisplay('Error');
+      setTokens([]);
+      setIsReset(true);
+      setLastOperator(null);
     }
   };
 
   const buttons = [
-    'AC', '⌫', '%', '/',
-    '7', '8', '9', '*',
-    '4', '5', '6', '-',
-    '1', '2', '3', '+',
-    '0', '.', '='
+    { label: 'C', type: 'action' },
+    { label: '+/-', type: 'action' },
+    { label: '%', type: 'action' },
+    { label: '÷', type: 'operator', op: '/' },
+    { label: '7', type: 'digit' },
+    { label: '8', type: 'digit' },
+    { label: '9', type: 'digit' },
+    { label: '×', type: 'operator', op: '*' },
+    { label: '4', type: 'digit' },
+    { label: '5', type: 'digit' },
+    { label: '6', type: 'digit' },
+    { label: '–', type: 'operator', op: '-' },
+    { label: '1', type: 'digit' },
+    { label: '2', type: 'digit' },
+    { label: '3', type: 'digit' },
+    { label: '+', type: 'operator', op: '+' },
+    { label: '0', type: 'digit', double: true },
+    { label: '.', type: 'digit' },
+    { label: '=', type: 'operator', op: '=' }
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--theme-bg, var(--md-sys-color-background))' }}>
-      <header style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'var(--theme-surface, var(--md-sys-color-surface))' }}>
-        <button className="md-btn md-btn-tonal" style={{ padding: '0 12px' }} onClick={() => navigate('/')}>←</button>
-        <h1 style={{ margin: 0, fontSize: '22px', color: 'var(--theme-text, var(--md-sys-color-on-surface))' }}>Calculadora</h1>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#000000', color: '#ffffff' }}>
+      <header style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: '#1c1c1e' }}>
+        <button className="back-btn" style={{ padding: '0', width: '40px', height: '40px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#ffffff', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', cursor: 'pointer' }} onClick={() => navigate('/')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </button>
+        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: '#ffffff' }}>Calculadora</h1>
       </header>
 
-      <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '24px' }}>
+      <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', gap: '20px', maxWidth: '400px', width: '100%', margin: '0 auto', boxSizing: 'border-box' }}>
         
         {/* Display */}
-        <div style={{ textAlign: 'right', padding: '24px', backgroundColor: 'var(--theme-surface-variant, var(--md-sys-color-surface-variant))', borderRadius: '16px' }}>
-          <div style={{ color: 'var(--theme-text-variant, var(--md-sys-color-on-surface-variant))', fontSize: '18px', minHeight: '24px' }}>{equation}</div>
-          <div style={{ color: 'var(--theme-text, var(--md-sys-color-on-surface))', fontSize: '48px', fontWeight: 'bold', wordBreak: 'break-all' }}>{display}</div>
+        <div style={{ textAlign: 'right', padding: '10px 20px', minHeight: '80px', display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+          <div style={{ color: '#ffffff', fontSize: '64px', fontWeight: '300', wordBreak: 'break-all', letterSpacing: '-1px' }}>{display}</div>
         </div>
 
         {/* Keypad */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
-          {buttons.map(btn => (
-            <button
-              key={btn}
-              onClick={() => {
-                if (btn === 'AC') handleClearAll();
-                else if (btn === '⌫') handleBackspace();
-                else if (btn === '=') handleCalculate();
-                else handleInput(btn);
-              }}
-              style={{
-                padding: '24px 0',
-                fontSize: '24px',
-                borderRadius: '50%',
-                border: 'none',
-                gridColumn: btn === '0' ? 'span 2' : 'span 1',
-                borderRadius: btn === '0' ? '40px' : '50%',
-                backgroundColor: ['/', '*', '-', '+', '='].includes(btn) 
-                  ? 'var(--theme-accent, var(--md-sys-color-primary-container))' 
-                  : ['AC', '⌫', '%'].includes(btn) ? 'var(--md-sys-color-error-container)' : 'var(--theme-btn-bg, var(--md-sys-color-secondary-container))',
-                color: ['/', '*', '-', '+', '='].includes(btn) 
-                  ? 'var(--theme-accent-text, var(--md-sys-color-on-primary-container))' 
-                  : ['AC', '⌫', '%'].includes(btn) ? 'var(--md-sys-color-on-error-container)' : 'var(--theme-btn-text, var(--md-sys-color-on-secondary-container))',
-                cursor: 'pointer'
-              }}
-            >
-              {btn}
-            </button>
-          ))}
+          {buttons.map(btn => {
+            const isDigit = btn.type === 'digit';
+            const isAction = btn.type === 'action';
+            const isOperator = btn.type === 'operator';
+            const isActiveOp = isOperator && lastOperator === btn.op;
+
+            let bg = '#333333';
+            let color = '#ffffff';
+            if (isAction) {
+              bg = '#a5a5a5';
+              color = '#000000';
+            } else if (isOperator) {
+              bg = isActiveOp ? '#ffffff' : '#ff9f0a';
+              color = isActiveOp ? '#ff9f0a' : '#ffffff';
+            }
+
+            return (
+              <button
+                key={btn.label}
+                onClick={() => {
+                  if (btn.label === 'C') handleClear();
+                  else if (btn.label === '+/-') handleToggleSign();
+                  else if (btn.label === '%') handlePercent();
+                  else if (btn.label === '=') handleCalculate();
+                  else if (isOperator) handleOperator(btn.op);
+                  else handleDigit(btn.label);
+                }}
+                style={{
+                  gridColumn: btn.double ? 'span 2' : 'span 1',
+                  height: '75px',
+                  fontSize: '28px',
+                  fontWeight: '500',
+                  borderRadius: btn.double ? '40px' : '50%',
+                  border: 'none',
+                  backgroundColor: bg,
+                  color: color,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: btn.double ? 'flex-start' : 'center',
+                  paddingLeft: btn.double ? '28px' : '0',
+                  transition: 'all 0.15s ease',
+                  userSelect: 'none'
+                }}
+              >
+                {btn.label}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
