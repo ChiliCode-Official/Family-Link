@@ -56,8 +56,13 @@ function Calculator() {
     setLastOperator(null);
   };
 
-  const handleToggleSign = () => {
-    setDisplay(String(parseFloat(display) * -1));
+  const handleBackspace = () => {
+    if (isReset) return;
+    if (display.length > 1) {
+      setDisplay(display.slice(0, -1));
+    } else {
+      setDisplay('0');
+    }
   };
 
   const handlePercent = () => {
@@ -137,7 +142,7 @@ function Calculator() {
 
   const buttons = [
     { label: 'C', type: 'action' },
-    { label: '+/-', type: 'action' },
+    { label: '⌫', type: 'action' },
     { label: '%', type: 'action' },
     { label: '÷', type: 'operator', op: '/' },
     { label: '7', type: 'digit' },
@@ -196,7 +201,7 @@ function Calculator() {
                 key={btn.label}
                 onClick={() => {
                   if (btn.label === 'C') handleClear();
-                  else if (btn.label === '+/-') handleToggleSign();
+                  else if (btn.label === '⌫') handleBackspace();
                   else if (btn.label === '%') handlePercent();
                   else if (btn.label === '=') handleCalculate();
                   else if (isOperator) handleOperator(btn.op);
