@@ -386,40 +386,93 @@ function Calendar() {
 
       {/* Event Edit/Create Modal */}
       {isEventModalOpen && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 120 }}>
-          <div className="md-card md-card-elevated" style={{ width: '90%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <h2 style={{ margin: 0 }}>{newEvent.id ? 'Editar Evento' : 'Nuevo Evento'}</h2>
-            <input type="number" min="1" max={daysInMonth} placeholder={`Día (1-${daysInMonth})`} value={newEvent.date} onChange={e => setNewEvent({...newEvent, date: e.target.value})} style={{ padding: '12px', borderRadius: '4px', border: '1px solid var(--md-sys-color-outline)' }} />
-            <input placeholder="Título del evento" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} style={{ padding: '12px', borderRadius: '4px', border: '1px solid var(--md-sys-color-outline)' }} />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <select value={newEvent.tagId} onChange={e => setNewEvent({...newEvent, tagId: e.target.value})} style={{ flex: 1, padding: '12px', borderRadius: '4px', border: '1px solid var(--md-sys-color-outline)' }}>
-                <option value="">Sin etiqueta</option>
-                <option value="auto">🚗 Pasar en Auto</option>
-                {tags.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-              <button className="md-btn md-btn-tonal" onClick={() => setIsTagModalOpen(true)}>+ Tag</button>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 120, padding: '20px' }}>
+          <div className="md-card md-card-elevated" style={{ width: '100%', maxWidth: '400px', padding: '24px', borderRadius: '24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', color: 'var(--theme-text, #ffffff)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>{newEvent.id ? 'Editar Evento' : 'Nuevo Evento'}</h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--theme-text-variant, #aaaaaa)' }}>📅 Día del mes</label>
+              <input 
+                type="number" 
+                min="1" 
+                max={daysInMonth} 
+                placeholder={`Día (1-${daysInMonth})`} 
+                value={newEvent.date} 
+                onChange={e => setNewEvent({...newEvent, date: e.target.value})} 
+                style={{ padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'var(--theme-bg, #121212)', color: 'var(--theme-text, #ffffff)', outline: 'none', fontSize: '15px' }} 
+              />
             </div>
-            {String(newEvent.tagId) === 'auto' && (
-              <div style={{ backgroundColor: 'var(--tag-yellow)', color: 'var(--tag-on-yellow)', padding: '12px', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontWeight: '500', fontSize: '14px' }}>🚘 Asignar responsable de recoger:</div>
-                 <select value={newEvent.assignedTo} onChange={e => setNewEvent({...newEvent, assignedTo: e.target.value})} style={{ padding: '8px', borderRadius: '4px', border: 'none', width: '100%' }}>
-                  <option value="">Selecciona alguien...</option>
-                  {registeredUsers.length > 0 ? (
-                    registeredUsers.map(u => {
-                      const name = u.nickname || u.displayName || 'Usuario';
-                      return <option key={u.id} value={name}>{name}</option>;
-                    })
-                  ) : (
-                    FAMILY_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)
-                  )}
-                </select>
-              </div>
-            )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginTop: '8px' }}>
-              {newEvent.id ? <button className="md-btn" style={{ color: 'var(--md-sys-color-error)' }} onClick={handleDeleteEvent}>Borrar</button> : <div></div>}
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--theme-text-variant, #aaaaaa)' }}>📝 Título del evento</label>
+              <input 
+                placeholder="Ej. Cita al dentista, Clase, etc." 
+                value={newEvent.title} 
+                onChange={e => setNewEvent({...newEvent, title: e.target.value})} 
+                style={{ padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'var(--theme-bg, #121212)', color: 'var(--theme-text, #ffffff)', outline: 'none', fontSize: '15px' }} 
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--theme-text-variant, #aaaaaa)' }}>🏷️ Etiqueta</label>
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button className="md-btn" onClick={() => { setIsEventModalOpen(false); resetEventState(); }}>Cancelar</button>
-                <button className="md-btn md-btn-primary" onClick={handleSaveEvent}>Guardar</button>
+                <select 
+                  value={newEvent.tagId} 
+                  onChange={e => setNewEvent({...newEvent, tagId: e.target.value})} 
+                  style={{ flex: 1, padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'var(--theme-bg, #121212)', color: 'var(--theme-text, #ffffff)', outline: 'none', fontSize: '14px', cursor: 'pointer' }}
+                >
+                  <option value="">Sin etiqueta</option>
+                  <option value="auto">🚗 Pasar en Auto</option>
+                  {tags.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <button className="md-btn md-btn-tonal" onClick={() => setIsTagModalOpen(true)} style={{ borderRadius: '12px', whiteSpace: 'nowrap' }}>+ Tag</button>
+              </div>
+            </div>
+
+            {/* Asignar a / Participante (Siempre visible para cualquier tipo de evento) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '13px', fontWeight: '600', color: String(newEvent.tagId) === 'auto' ? '#ffb300' : 'var(--theme-text-variant, #aaaaaa)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>{String(newEvent.tagId) === 'auto' ? '🚘 Responsable de recoger:' : '👤 Asignar a / Participante:'}</span>
+              </label>
+              <select 
+                value={newEvent.assignedTo || ''} 
+                onChange={e => setNewEvent({...newEvent, assignedTo: e.target.value})} 
+                style={{ 
+                  padding: '12px 14px', 
+                  borderRadius: '12px', 
+                  border: String(newEvent.tagId) === 'auto' ? '1.5px solid #ffb300' : '1px solid rgba(255,255,255,0.1)', 
+                  backgroundColor: 'var(--theme-bg, #121212)', 
+                  color: 'var(--theme-text, #ffffff)', 
+                  outline: 'none', 
+                  fontSize: '14px', 
+                  cursor: 'pointer' 
+                }}
+              >
+                <option value="">Familia / Todos</option>
+                {registeredUsers.length > 0 ? (
+                  registeredUsers.map(u => {
+                    const name = u.nickname || u.displayName || 'Usuario';
+                    return <option key={u.id} value={name}>{name}</option>;
+                  })
+                ) : (
+                  FAMILY_MEMBERS.map(m => <option key={m} value={m}>{m}</option>)
+                )}
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginTop: '12px' }}>
+              {newEvent.id ? (
+                <button className="md-btn" style={{ color: '#ff4b4b', fontWeight: '600' }} onClick={handleDeleteEvent}>
+                  Borrar
+                </button>
+              ) : <div></div>}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button className="md-btn md-btn-tonal" onClick={() => { setIsEventModalOpen(false); resetEventState(); }} style={{ borderRadius: '12px' }}>
+                  Cancelar
+                </button>
+                <button className="md-btn md-btn-primary" onClick={handleSaveEvent} style={{ borderRadius: '12px' }}>
+                  Guardar
+                </button>
               </div>
             </div>
           </div>

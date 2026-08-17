@@ -286,237 +286,254 @@ function Groceries() {
       {/* List content */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {filteredItems.length === 0 && (
-          <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '260px' }}>
+          <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '260px', padding: '20px 0' }}>
             <style>{`
-              .loader {
-                --zoom: 0.3;
+              .cat-loader {
+                width: fit-content;
+                height: fit-content;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .cat-wrapper {
+                width: fit-content;
+                height: fit-content;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+              }
+              .catContainer {
+                width: 100%;
+                height: fit-content;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+              }
+              .catbody {
+                width: 80px;
+              }
+              .tail {
                 position: absolute;
-                top: 40%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                --wh: calc(var(--wh-number) * 1px);
-                --wh-n: calc(var(--wh-number) * -1px);
-                width: calc(var(--wh-number) * var(--wh));
-                height: calc(var(--wh-number) * var(--wh));
-                --color: #fff;
-                --blur: 0;
-                filter: drop-shadow(var(--wh-n) 0 var(--blur) var(--color))
-                  drop-shadow(0 var(--wh-n) var(--blur) var(--color))
-                  drop-shadow(var(--wh) 0 var(--blur) var(--color))
-                  drop-shadow(0 var(--wh) var(--blur) var(--color));
-                image-rendering: pixelated;
-                zoom: var(--zoom);
-                animation: mover 0.3s linear infinite;
+                width: 17px;
+                top: 50%;
+                animation: cat-tail 0.5s ease-in infinite alternate-reverse;
+                transform-origin: top;
               }
-
-              .loader .pixel {
-                width: var(--wh);
-                height: var(--wh);
-                box-shadow: var(--shadow);
-              }
-
-              @keyframes mover {
-                0%,
+              @keyframes cat-tail {
+                0% {
+                  transform: rotateZ(60deg);
+                }
+                50% {
+                  transform: rotateZ(0deg);
+                }
                 100% {
-                  --shadow: 0px 0px transparent, 24px 0px transparent, 48px 0px transparent,
-                    72px 0px transparent, 96px 0px transparent, 120px 0px transparent,
-                    144px 0px transparent, 168px 0px transparent, 192px 0px transparent,
-                    216px 0px transparent, 240px 0px transparent, 264px 0px transparent,
-                    288px 0px transparent, 312px 0px #535353, 336px 0px #535353,
-                    360px 0px #535353, 384px 0px #535353, 408px 0px #535353, 432px 0px #535353,
-                    456px 0px #535353, 480px 0px #535353, 504px 0px #535353, 528px 0px #535353,
-                    552px 0px transparent, 0px 24px transparent, 24px 24px transparent,
-                    48px 24px transparent, 72px 24px transparent, 96px 24px transparent,
-                    120px 24px transparent, 144px 24px transparent, 168px 24px transparent,
-                    192px 24px transparent, 216px 24px transparent, 240px 24px transparent,
-                    264px 24px transparent, 288px 24px #535353, 312px 24px #535353,
-                    336px 24px #535353, 360px 24px #535353, 384px 24px #535353,
-                    408px 24px #535353, 432px 24px #535353, 456px 24px #535353,
-                    480px 24px #535353, 504px 24px #535353, 528px 24px #535353,
-                    552px 24px #535353, 0px 48px transparent, 24px 48px transparent,
-                    48px 48px transparent, 72px 48px transparent, 96px 48px transparent,
-                    120px 48px transparent, 144px 48px transparent, 168px 48px transparent,
-                    192px 48px transparent, 216px 48px transparent, 240px 48px transparent,
-                    264px 48px transparent, 288px 48px #535353, 312px 48px #535353,
-                    336px 48px transparent, 360px 48px transparent, 384px 48px #535353,
-                    408px 48px #535353, 432px 48px #535353, 456px 48px #535353,
-                    480px 48px #535353, 504px 48px #535353, 528px 48px #535353,
-                    552px 48px #535353, 0px 72px transparent, 24px 72px transparent,
-                    48px 72px transparent, 72px 72px transparent, 96px 72px transparent,
-                    120px 72px transparent, 144px 72px transparent, 168px 72px transparent,
-                    192px 72px transparent, 216px 72px transparent, 240px 72px transparent,
-                    264px 72px transparent, 288px 72px #535353, 312px 72px #535353,
-                    336px 72px transparent, 360px 72px transparent, 384px 72px #535353,
-                    408px 72px #535353, 432px 72px #535353, 456px 72px #535353,
-                    480px 72px #535353, 504px 72px #535353, 528px 72px #535353,
-                    552px 72px #535353, 0px 96px transparent, 24px 96px transparent,
-                    48px 96px transparent, 72px 96px transparent, 96px 96px transparent,
-                    120px 96px transparent, 144px 96px transparent, 168px 96px transparent,
-                    192px 96px transparent, 216px 96px transparent, 240px 96px transparent,
-                    264px 96px transparent, 288px 96px #535353, 312px 96px #535353,
-                    336px 96px #535353, 360px 96px #535353, 384px 96px #535353,
-                    408px 96px #535353, 432px 96px #535353, 456px 96px #535353,
-                    480px 96px #535353, 504px 96px #535353, 528px 96px #535353,
-                    552px 96px #535353, 0px 120px transparent, 24px 120px transparent,
-                    48px 120px transparent, 72px 120px transparent, 96px 120px transparent,
-                    120px 120px transparent, 144px 120px transparent, 168px 120px transparent,
-                    192px 120px transparent, 216px 120px transparent, 240px 120px transparent,
-                    264px 120px transparent, 288px 120px #535353, 312px 120px #535353,
-                    336px 120px #535353, 360px 120px #535353, 384px 120px #535353,
-                    408px 120px #535353, 432px 120px #535353, 456px 120px #535353,
-                    480px 120px #535353, 504px 120px #535353, 528px 120px #535353,
-                    552px 120px #535353, 0px 144px transparent, 24px 144px transparent,
-                    48px 144px transparent, 72px 144px transparent, 96px 144px transparent,
-                    120px 144px transparent, 144px 144px transparent, 168px 144px transparent,
-                    192px 144px transparent, 216px 144px transparent, 240px 144px transparent,
-                    264px 144px transparent, 288px 144px #535353, 312px 144px #535353,
-                    336px 144px #535353, 360px 144px #535353, 384px 144px #535353,
-                    408px 144px #535353, 432px 144px transparent, 456px 144px transparent,
-                    480px 144px transparent, 504px 144px transparent, 528px 144px transparent,
-                    552px 144px transparent, 0px 168px transparent, 24px 168px transparent,
-                    48px 168px transparent, 72px 168px transparent, 96px 168px transparent,
-                    120px 168px transparent, 144px 168px transparent, 168px 168px transparent,
-                    192px 168px transparent, 216px 168px transparent, 240px 168px transparent,
-                    264px 168px transparent, 288px 168px #535353, 312px 168px #535353,
-                    336px 168px #535353, 360px 168px #535353, 384px 168px #535353,
-                    408px 168px #535353, 432px 168px transparent, 456px 168px transparent,
-                    480px 168px transparent, 504px 168px transparent, 528px 168px transparent,
-                    552px 168px transparent, 0px 192px transparent, 24px 192px transparent,
-                    48px 192px transparent, 72px 192px transparent, 96px 192px transparent,
-                    120px 192px transparent, 144px 192px transparent, 168px 192px transparent,
-                    192px 192px transparent, 216px 192px transparent, 240px 192px transparent,
-                    264px 192px transparent, 288px 192px #535353, 312px 192px #535353,
-                    336px 192px #535353, 360px 192px #535353, 384px 192px #535353,
-                    408px 192px #535353, 432px 192px #535353, 456px 192px #535353,
-                    480px 192px #535353, 504px 192px #535353, 528px 192px transparent,
-                    552px 192px transparent, 0px 216px #535353, 24px 216px transparent,
-                    48px 216px transparent, 72px 216px transparent, 96px 216px transparent,
-                    120px 216px transparent, 144px 216px transparent, 168px 216px transparent,
-                    192px 216px transparent, 216px 216px transparent, 240px 216px #535353,
-                    264px 216px #535353, 288px 216px #535353, 312px 216px #535353,
-                    336px 216px #535353, 360px 216px #535353, 384px 216px #535353,
-                    408px 216px transparent, 432px 216px transparent, 456px 216px transparent,
-                    480px 216px transparent, 504px 216px transparent, 528px 216px transparent,
-                    552px 216px transparent, 0px 240px #535353, 24px 240px transparent,
-                    48px 240px transparent, 72px 240px transparent, 96px 240px transparent,
-                    120px 240px transparent, 144px 240px transparent, 168px 240px transparent,
-                    192px 240px #535353, 216px 240px #535353, 240px 240px #535353,
-                    264px 240px #535353, 288px 240px #535353, 312px 240px #535353,
-                    336px 240px #535353, 360px 240px #535353, 384px 240px #535353,
-                    408px 240px transparent, 432px 240px transparent, 456px 240px transparent,
-                    480px 240px transparent, 504px 240px transparent, 528px 240px transparent,
-                    552px 240px transparent, 0px 264px #535353, 24px 264px #535353,
-                    48px 264px transparent, 72px 264px transparent, 96px 264px transparent,
-                    120px 264px transparent, 144px 264px transparent, 168px 264px #535353,
-                    192px 264px #535353, 216px 264px #535353, 240px 264px #535353,
-                    264px 264px #535353, 288px 264px #535353, 312px 264px #535353,
-                    336px 264px #535353, 360px 264px #535353, 384px 264px #535353,
-                    408px 264px #535353, 432px 264px #535353, 456px 264px transparent,
-                    480px 264px transparent, 504px 264px transparent, 528px 264px transparent,
-                    552px 264px transparent, 0px 288px #535353, 24px 288px #535353,
-                    48px 288px #535353, 72px 288px transparent, 96px 288px transparent,
-                    120px 288px transparent, 144px 288px #535353, 168px 288px #535353,
-                    192px 288px #535353, 216px 288px #535353, 240px 288px #535353,
-                    264px 288px #535353, 288px 288px #535353, 312px 288px #535353,
-                    336px 288px #535353, 360px 288px #535353, 384px 288px #535353,
-                    408px 288px transparent, 432px 288px #535353, 456px 288px transparent,
-                    480px 288px transparent, 504px 288px transparent, 528px 288px transparent,
-                    552px 288px transparent, 0px 312px #535353, 24px 312px #535353,
-                    48px 312px #535353, 72px 312px #535353, 96px 312px #535353,
-                    120px 312px #535353, 144px 312px #535353, 168px 312px #535353,
-                    192px 312px #535353, 216px 312px #535353, 240px 312px #535353,
-                    264px 312px #535353, 288px 312px #535353, 312px 312px #535353,
-                    336px 312px #535353, 360px 312px #535353, 384px 312px #535353,
-                    408px 312px transparent, 432px 312px transparent, 456px 312px transparent,
-                    480px 312px transparent, 504px 312px transparent, 528px 312px transparent,
-                    552px 312px transparent, 0px 336px #535353, 24px 336px #535353,
-                    48px 336px #535353, 72px 336px #535353, 96px 336px #535353,
-                    120px 336px #535353, 144px 336px #535353, 168px 336px #535353,
-                    192px 336px #535353, 216px 336px #535353, 240px 336px #535353,
-                    264px 336px #535353, 288px 336px #535353, 312px 336px #535353,
-                    336px 336px #535353, 360px 336px #535353, 384px 336px #535353,
-                    408px 336px transparent, 432px 336px transparent, 456px 336px transparent,
-                    480px 336px transparent, 504px 336px transparent, 528px 336px transparent,
-                    552px 336px transparent, 0px 360px transparent, 24px 360px #535353,
-                    48px 360px #535353, 72px 360px #535353, 96px 360px #535353,
-                    120px 360px #535353, 144px 360px #535353, 168px 360px #535353,
-                    192px 360px #535353, 216px 360px #535353, 240px 360px #535353,
-                    264px 360px #535353, 288px 360px #535353, 312px 360px #535353,
-                    336px 360px #535353, 360px 360px #535353, 384px 360px #535353,
-                    408px 360px transparent, 432px 360px transparent, 456px 360px transparent,
-                    480px 360px transparent, 504px 360px transparent, 528px 360px transparent,
-                    552px 360px transparent, 0px 384px transparent, 24px 384px transparent,
-                    48px 384px #535353, 72px 384px #535353, 96px 384px #535353,
-                    120px 384px #535353, 144px 384px #535353, 168px 384px #535353,
-                    192px 384px #535353, 216px 384px #535353, 240px 384px #535353,
-                    264px 384px #535353, 288px 384px #535353, 312px 384px #535353,
-                    336px 384px #535353, 360px 384px #535353, 384px 384px transparent,
-                    408px 384px transparent, 432px 384px transparent, 456px 384px transparent,
-                    480px 384px transparent, 504px 384px transparent, 528px 384px transparent,
-                    552px 384px transparent, 0px 408px transparent, 24px 408px transparent,
-                    48px 408px transparent, 72px 408px #535353, 96px 408px #535353,
-                    120px 408px #535353, 144px 408px #535353, 168px 408px #535353,
-                    192px 408px #535353, 216px 408px #535353, 240px 408px #535353,
-                    264px 408px #535353, 288px 408px #535353, 312px 408px #535353,
-                    336px 408px #535353, 360px 408px transparent, 384px 408px transparent,
-                    408px 408px transparent, 432px 408px transparent, 456px 408px transparent,
-                    480px 408px transparent, 504px 408px transparent, 528px 408px transparent,
-                    552px 408px transparent, 0px 432px transparent, 24px 432px transparent,
-                    48px 432px transparent, 72px 432px transparent, 96px 432px #535353,
-                    120px 432px #535353, 144px 432px #535353, 168px 432px #535353,
-                    192px 432px #535353, 216px 432px #535353, 240px 432px #535353,
-                    264px 432px #535353, 288px 432px #535353, 312px 432px #535353,
-                    336px 432px transparent, 360px 432px transparent, 384px 432px transparent,
-                    408px 432px transparent, 432px 432px transparent, 456px 432px transparent,
-                    480px 432px transparent, 504px 432px transparent, 528px 432px transparent,
-                    552px 432px transparent, 0px 456px transparent, 24px 456px transparent,
-                    48px 456px transparent, 72px 456px transparent, 96px 456px transparent,
-                    120px 456px #535353, 144px 456px #535353, 168px 456px #535353,
-                    192px 456px #535353, 216px 456px #535353, 240px 456px #535353,
-                    264px 456px #535353, 288px 456px #535353, 312px 456px transparent,
-                    336px 456px transparent, 360px 456px transparent, 384px 456px transparent,
-                    408px 456px transparent, 432px 456px transparent, 456px 456px transparent,
-                    480px 456px transparent, 504px 456px transparent, 528px 456px transparent,
-                    552px 456px transparent, 0px 480px transparent, 24px 480px transparent,
-                    48px 480px transparent, 72px 480px transparent, 96px 480px transparent,
-                    120px 480px transparent, 144px 480px #535353, 168px 480px #535353,
-                    192px 480px #535353, 216px 480px transparent, 240px 480px transparent,
-                    264px 480px #535353, 288px 480px #535353, 312px 480px transparent,
-                    336px 480px transparent, 360px 480px transparent, 384px 480px transparent,
-                    408px 480px transparent, 432px 480px transparent, 456px 480px transparent,
-                    480px 480px transparent, 504px 480px transparent, 528px 480px transparent,
-                    552px 480px transparent, 0px 504px transparent, 24px 504px transparent,
-                    48px 504px transparent, 72px 504px transparent, 96px 504px transparent,
-                    120px 504px transparent, 144px 504px transparent, 168px 504px #535353,
-                    192px 504px #535353, 216px 504px #535353, 240px 504px transparent,
-                    264px 504px transparent, 288px 504px #535353, 312px 504px transparent,
-                    336px 504px transparent, 360px 504px transparent, 384px 504px transparent,
-                    408px 504px transparent, 432px 504px transparent, 456px 504px transparent,
-                    480px 504px transparent, 504px 504px transparent, 528px 504px transparent,
-                    552px 504px transparent, 0px 528px transparent, 24px 528px transparent,
-                    48px 528px transparent, 72px 528px transparent, 96px 528px transparent,
-                    120px 528px transparent, 144px 528px transparent, 168px 528px transparent,
-                    192px 528px transparent, 216px 528px transparent, 240px 528px transparent,
-                    264px 528px transparent, 288px 528px #535353, 312px 528px transparent,
-                    336px 528px transparent, 360px 528px transparent, 384px 528px transparent,
-                    408px 528px transparent, 432px 528px transparent, 456px 528px transparent,
-                    480px 528px transparent, 504px 528px transparent, 528px 528px transparent,
-                    552px 528px transparent, 0px 552px transparent, 24px 552px transparent,
-                    48px 552px transparent, 72px 552px transparent, 96px 552px transparent,
-                    120px 552px transparent, 144px 552px transparent, 168px 552px transparent,
-                    192px 552px transparent, 216px 552px transparent, 240px 552px transparent,
-                    264px 552px transparent, 288px 552px #535353, 312px 552px #535353,
-                    336px 552px transparent, 360px 552px transparent, 384px 552px transparent,
-                    408px 552px transparent, 432px 552px transparent, 456px 552px transparent,
-                    480px 552px transparent, 504px 552px transparent, 528px 552px transparent,
-                    552px 552px transparent;
+                  transform: rotateZ(-20deg);
+                }
+              }
+              .wall {
+                width: 260px;
+              }
+              .cat-text {
+                display: flex;
+                flex-direction: column;
+                width: 50px;
+                position: absolute;
+                margin: 0px 0px 100px 120px;
+              }
+              .cat-zzz {
+                color: var(--theme-text, #ffffff);
+                font-weight: 700;
+                font-size: 15px;
+                animation: cat-zzz-anim 2s linear infinite;
+              }
+              .cat-bigzzz {
+                color: var(--theme-text, #ffffff);
+                font-weight: 700;
+                font-size: 25px;
+                margin-left: 10px;
+                animation: cat-zzz-anim 2.3s linear infinite;
+              }
+              @keyframes cat-zzz-anim {
+                0% {
+                  color: transparent;
+                }
+                50% {
+                  color: var(--theme-text, #ffffff);
+                }
+                100% {
+                  color: transparent;
                 }
               }
             `}</style>
-            <aside className="loader" style={{ "--wh-number": 24 }}>
-              <div className="pixel"></div>
-            </aside>
-            <div style={{ marginTop: '90px', color: 'var(--theme-text-variant, #888)', fontSize: '15px', fontWeight: '500' }}>
+            
+            <div className="cat-loader">
+              <div className="cat-wrapper">
+                <div className="catContainer">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 733 673"
+                    className="catbody"
+                  >
+                    <path
+                      fill="#5c5c5c"
+                      d="M111.002 139.5C270.502 -24.5001 471.503 2.4997 621.002 139.5C770.501 276.5 768.504 627.5 621.002 649.5C473.5 671.5 246 687.5 111.002 649.5C-23.9964 611.5 -48.4982 303.5 111.002 139.5Z"
+                    ></path>
+                    <path fill="#5c5c5c" d="M184 9L270.603 159H97.3975L184 9Z"></path>
+                    <path fill="#5c5c5c" d="M541 0L627.603 150H454.397L541 0Z"></path>
+                  </svg>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 158 564"
+                    className="tail"
+                  >
+                    <path
+                      fill="#424242"
+                      d="M5.97602 76.066C-11.1099 41.6747 12.9018 0 51.3036 0V0C71.5336 0 89.8636 12.2558 97.2565 31.0866C173.697 225.792 180.478 345.852 97.0691 536.666C89.7636 553.378 73.0672 564 54.8273 564V564C16.9427 564 -5.4224 521.149 13.0712 488.085C90.2225 350.15 87.9612 241.089 5.97602 76.066Z"
+                    ></path>
+                  </svg>
+                  <div className="cat-text">
+                    <span className="cat-bigzzz">Z</span>
+                    <span className="cat-zzz">Z</span>
+                  </div>
+                </div>
+                <div className="wallContainer">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 500 126"
+                    className="wall"
+                  >
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="3"
+                      x2="450"
+                      y1="3"
+                      x1="50"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="85"
+                      x2="400"
+                      y1="85"
+                      x1="100"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="122"
+                      x2="375"
+                      y1="122"
+                      x1="125"
+                    ></line>
+                    <line strokeWidth="6" stroke="#7C7C7C" y2="43" x2="500" y1="43"></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="1.99391"
+                      x2="115.5"
+                      y1="43.0061"
+                      x1="115.5"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="2.00002"
+                      x2="189"
+                      y1="43.0122"
+                      x1="189"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="2.00612"
+                      x2="262.5"
+                      y1="43.0183"
+                      x1="262.5"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="2.01222"
+                      x2="336"
+                      y1="43.0244"
+                      x1="336"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="2.01833"
+                      x2="409.5"
+                      y1="43.0305"
+                      x1="409.5"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="43"
+                      x2="153"
+                      y1="84.0122"
+                      x1="153"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="43"
+                      x2="228"
+                      y1="84.0122"
+                      x1="228"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="43"
+                      x2="303"
+                      y1="84.0122"
+                      x1="303"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="43"
+                      x2="378"
+                      y1="84.0122"
+                      x1="378"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="84"
+                      x2="192"
+                      y1="125.012"
+                      x1="192"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="84"
+                      x2="267"
+                      y1="125.012"
+                      x1="267"
+                    ></line>
+                    <line
+                      strokeWidth="6"
+                      stroke="#7C7C7C"
+                      y2="84"
+                      x2="342"
+                      y1="125.012"
+                      x1="342"
+                    ></line>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '20px', color: 'var(--theme-text-variant, #888)', fontSize: '15px', fontWeight: '500', textAlign: 'center' }}>
               No hay elementos en la lista de {activeHouseFilter === 'Todas' ? 'las casas' : activeHouseFilter}.
             </div>
           </div>
