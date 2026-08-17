@@ -7,10 +7,36 @@ function Calculator() {
   const [equation, setEquation] = useState('');
 
   const handleInput = (val) => {
-    if (display === '0' && !isNaN(val)) {
-      setDisplay(val);
+    if (display === 'Error') {
+      setDisplay(val === '.' ? '0.' : val);
+      return;
+    }
+
+    const isOperator = (char) => ['+', '-', '*', '/', '%'].includes(char);
+    const lastChar = display[display.length - 1];
+
+    if (val === '.') {
+      const parts = display.split(/[\+\-\*\/]/);
+      const lastPart = parts[parts.length - 1];
+      if (lastPart.includes('.')) return;
+    }
+
+    if (isOperator(val)) {
+      if (isOperator(lastChar)) {
+        setDisplay(display.slice(0, -1) + val);
+      } else {
+        setDisplay(display + val);
+      }
     } else {
-      setDisplay(display + val);
+      if (display === '0') {
+        if (val === '.') {
+          setDisplay('0.');
+        } else {
+          setDisplay(val);
+        }
+      } else {
+        setDisplay(display + val);
+      }
     }
   };
 
@@ -29,11 +55,15 @@ function Calculator() {
 
   const handleCalculate = () => {
     try {
-      // Safe evaluation of simple math expression
-      const sanitized = display.replace(/x/g, '*').replace(/[^0-9+\-*/.%]/g, '');
+      // Replace x with * and % with /100 to evaluate correctly
+      let sanitized = display.replace(/x/g, '*').replace(/%/g, '/100');
+      
       const result = new Function(`return ${sanitized}`)();
+      if (result === undefined || isNaN(result) || !isFinite(result)) {
+        throw new Error();
+      }
       setEquation(display + ' =');
-      setDisplay(String(result));
+      setDisplay(String(Number(result.toFixed(8))));
     } catch (e) {
       setDisplay('Error');
     }

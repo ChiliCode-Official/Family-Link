@@ -168,7 +168,7 @@ function Groceries() {
 
       {/* Input controls */}
       <div style={{ padding: '16px 24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid var(--border, rgba(255,255,255,0.1))', flexShrink: 0 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
           <input 
             type="text" 
             placeholder="Añadir algo a la lista..." 
@@ -177,14 +177,15 @@ function Groceries() {
             onKeyPress={(e) => e.key === 'Enter' && handleAddItem()}
             style={{ 
               flex: 1, 
-              minWidth: '200px',
               padding: '12px 16px', 
               borderRadius: '24px', 
-              border: '1px solid var(--border, #2c2c2c)', 
+              border: '1.5px solid var(--border, rgba(255,255,255,0.15))', 
               fontSize: '16px', 
               outline: 'none',
               backgroundColor: 'var(--theme-bg, #121212)',
-              color: 'var(--theme-text, #ffffff)'
+              color: 'var(--theme-text, #ffffff)',
+              transition: 'border-color 0.2s',
+              minWidth: 0
             }}
           />
           
@@ -195,13 +196,14 @@ function Groceries() {
             style={{
               padding: '12px 16px',
               borderRadius: '24px',
-              border: '1px solid var(--border, #2c2c2c)',
+              border: '1.5px solid var(--border, rgba(255,255,255,0.15))',
               backgroundColor: 'var(--theme-bg, #121212)',
               color: 'var(--theme-text, #ffffff)',
               fontSize: '14px',
               fontWeight: '600',
               outline: 'none',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0
             }}
           >
             {HOUSES.map(house => (
@@ -211,7 +213,7 @@ function Groceries() {
 
           <button 
             className="md-btn md-btn-primary" 
-            style={{ borderRadius: '24px', padding: '12px 24px', height: '45px', display: 'flex', alignItems: 'center' }} 
+            style={{ borderRadius: '24px', padding: '12px 24px', height: '45px', display: 'flex', alignItems: 'center', flexShrink: 0 }} 
             onClick={handleAddItem}
           >
             Añadir
@@ -232,8 +234,8 @@ function Groceries() {
                   padding: '6px 12px',
                   borderRadius: '16px',
                   border: '1.5px solid var(--theme-accent, #006493)',
-                  backgroundColor: 'rgba(0, 100, 147, 0.1)',
-                  color: 'var(--theme-accent, #00baec)',
+                  backgroundColor: 'rgba(var(--theme-accent-rgb, 0, 100, 147), 0.08)',
+                  color: 'var(--theme-accent, #006493)',
                   fontSize: '13px',
                   fontWeight: '600',
                   cursor: 'pointer',
@@ -245,8 +247,8 @@ function Groceries() {
                   e.currentTarget.style.color = '#ffffff';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(0, 100, 147, 0.1)';
-                  e.currentTarget.style.color = 'var(--theme-accent, #00baec)';
+                  e.currentTarget.style.backgroundColor = 'rgba(var(--theme-accent-rgb, 0, 100, 147), 0.08)';
+                  e.currentTarget.style.color = 'var(--theme-accent, #006493)';
                 }}
               >
                 💡 {sug}
