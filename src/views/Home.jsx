@@ -18,6 +18,7 @@ function Home() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [themeMode, setThemeMode] = useState(localStorage.getItem('familyTheme') || 'dark');
   const [accentColor, setAccentColor] = useState(localStorage.getItem('familyAccent') || '#006493');
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   // Month selector
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -101,6 +102,24 @@ function Home() {
   }, [nickname]);
 
   useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    const handleAppInstalled = () => {
+      setDeferredPrompt(null);
+    };
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, []);
+
+  useEffect(() => {
     const unsubEvents = onSnapshot(collection(db, 'events'), (snapshot) => {
       const allEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       const monthEvents = allEvents.filter(e => {
@@ -155,6 +174,15 @@ function Home() {
     localStorage.setItem('familyAccent', accentColor);
     applyTheme(themeMode, accentColor);
     setIsSettingsOpen(false);
+  };
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to PWA install prompt: ${outcome}`);
+      setDeferredPrompt(null);
+    }
   };
 
   const today = new Date();
@@ -246,6 +274,18 @@ function Home() {
                 <span style={{ fontFamily: 'monospace', color: 'var(--theme-text, black)' }}>{accentColor}</span>
               </div>
             </div>
+
+            {deferredPrompt && (
+              <div style={{ marginTop: '4px' }}>
+                <button 
+                  className="md-btn md-btn-primary" 
+                  style={{ width: '100%', backgroundColor: 'var(--theme-accent, #006493)', color: 'var(--theme-accent-text, white)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                  onClick={handleInstallApp}
+                >
+                  📥 Instalar Aplicación
+                </button>
+              </div>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
               <button className="md-btn" style={{ color: 'red' }} onClick={handleLogout}>Cerrar Sesión</button>
