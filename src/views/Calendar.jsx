@@ -130,7 +130,9 @@ function Calendar() {
       dateMs: dateMs,
       tagId: newEvent.tagId, 
       autoPickup: isAuto, 
-      assignedTo: newEvent.assignedTo || nickname 
+      assignedTo: newEvent.assignedTo || nickname,
+      creatorName: newEvent.creatorName || nickname,
+      creatorPic: newEvent.creatorPic || auth.currentUser?.photoURL || `https://ui-avatars.com/api/?name=${nickname}&background=random`
     };
 
     if (newEvent.id) {
@@ -318,45 +320,66 @@ function Calendar() {
       {/* Event Info Card Modal */}
       {isEventInfoOpen && selectedEvent && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}>
-          <div className="card" style={{ backgroundColor: getTagStyle(selectedEvent.tagId).bg, color: getTagStyle(selectedEvent.tagId).text, boxShadow: '0 10px 20px rgba(0,0,0,0.3)' }}>
-            <div className="corner" style={{ backgroundColor: 'white' }}>
-              <i data-corner="tl"></i>
-              <i data-corner="br"></i>
-              <div data-action="notif" className="action" onClick={() => setIsEventInfoOpen(false)}>
-                <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" height="1.2em" width="1.2em" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-              </div>
-            </div>
-            <figure className="boxes">
-              <span className="img">
-                <img src={`https://ui-avatars.com/api/?name=${selectedEvent.assignedTo || 'Familia'}&background=random`} alt="avatar" style={{width: '100%', height: '100%', borderRadius: '50%'}} />
+          <div className="md-card md-card-elevated" style={{ width: '90%', maxWidth: '360px', padding: '24px', borderRadius: '24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', color: 'var(--theme-text, #ffffff)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '16px', position: 'relative' }}>
+            
+            {/* Tag Badge */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                backgroundColor: getTagStyle(selectedEvent.tagId).bg,
+                color: getTagStyle(selectedEvent.tagId).text
+              }}>
+                {String(selectedEvent.tagId) === 'auto' ? '🚗 Pasar en Auto' : (tags.find(t => String(t.id) === String(selectedEvent.tagId))?.name || 'Evento')}
               </span>
-              <figcaption className="caption">
-                <p className="name">{selectedEvent.assignedTo || 'Evento Familiar'}</p>
-                <span className="as">{selectedEvent.autoPickup ? 'Asignado para recoger' : 'Participante'}</span>
-              </figcaption>
-            </figure>
-            <div className="box-body">
-              <div className="box-content">
-                <div className="caption">
-                  <p style={{ fontWeight: 'bold', fontSize: '20px', margin: 0 }}>{selectedEvent.title}</p>
-                  <div><p className="text-sm"><time className="font-semibold">{selectedEvent.date} de {monthNames[month]}</time></p></div>
-                </div>
+              
+              <button 
+                onClick={() => setIsEventInfoOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--theme-text-variant, #888888)' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Event Title */}
+            <div>
+              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: 'var(--theme-text, #ffffff)' }}>{selectedEvent.title}</h2>
+              <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: 'var(--theme-text-variant, #aaaaaa)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>📅</span> {selectedEvent.date} de {monthNames[month]} {year}
+              </p>
+            </div>
+
+            {/* Assigned to / Creator section */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '16px', backgroundColor: 'var(--theme-bg, rgba(255,255,255,0.02))', border: '1px solid rgba(255,255,255,0.04)' }}>
+              <img 
+                src={selectedEvent.creatorPic || auth.currentUser?.photoURL || `https://ui-avatars.com/api/?name=${selectedEvent.assignedTo || 'Familia'}&background=random`} 
+                alt="Creator Profile" 
+                style={{ width: '42px', height: '42px', borderRadius: '50%', border: '2px solid var(--theme-accent, #006493)', objectFit: 'cover' }} 
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--theme-text, #ffffff)' }}>
+                  Asignado a: {selectedEvent.assignedTo || 'Familia'}
+                </span>
+                <span style={{ fontSize: '12px', color: 'var(--theme-text-variant, #aaaaaa)' }}>
+                  Creado por: {selectedEvent.creatorName || 'Usuario'}
+                </span>
               </div>
             </div>
-            <div data-title="Acciones" className="box-foot">
-              <figure className="box-foot-figure" style={{ backgroundColor: 'rgba(0,0,0,0.05)', border: 'none' }}>
-                <span className="img"><span style={{fontSize: '24px'}}>📅</span></span>
-                <figcaption className="font-medium">Detalles</figcaption>
-                <button type="button" onClick={handleEditClick} title="Editar evento">
-                  <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                </button>
-              </figure>
-              <div className="box-foot-actions">
-                <button type="button" aria-label="whatsapp" className="box-foot-action whatsapp" onClick={handleWhatsApp} title="Tengo una sugerencia para este evento">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                </button>
-              </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', gap: '12px' }}>
+              <button className="md-btn md-btn-tonal" onClick={handleEditClick} style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, justifyContent: 'center' }}>
+                ✏️ Editar
+              </button>
+              
+              <button className="md-btn md-btn-primary" onClick={handleWhatsApp} style={{ backgroundColor: '#25D366', color: 'white', display: 'flex', alignItems: 'center', gap: '6px', flex: 1, justifyContent: 'center' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                Compartir
+              </button>
             </div>
+
           </div>
         </div>
       )}
