@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { safeStorage } from '../services/storage';
 import '../styles/event-card.css';
 import '../styles/dog.css';
 
@@ -22,7 +23,7 @@ const DEFAULT_FAMILY_MEMBERS = ['Mamá', 'Papá', 'Hermano', 'Rodrigo', 'Hannah'
 function Calendar() {
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [nickname, setNickname] = useState(localStorage.getItem('familyNickname') || '');
+  const [nickname, setNickname] = useState(safeStorage.get('familyNickname', ''));
   
   const [tags, setTags] = useState([]);
   const [events, setEvents] = useState([]);

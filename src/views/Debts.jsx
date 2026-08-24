@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { collection, onSnapshot, addDoc, doc, deleteDoc, getDoc, setDoc } from 'firebase/firestore';
+import { safeStorage } from '../services/storage';
 
 function Debts() {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ function Debts() {
   
   const [newDebt, setNewDebt] = useState({ amount: '', debtor: '', customDebtor: '', description: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [nickname, setNickname] = useState(localStorage.getItem('familyNickname') || '');
+  const [nickname, setNickname] = useState(safeStorage.get('familyNickname', ''));
 
   useEffect(() => {
     // 1. Listen to real Debts from Firestore

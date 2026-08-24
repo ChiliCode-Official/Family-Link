@@ -4,20 +4,21 @@ import { auth, db } from '../services/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { collection, query, where, onSnapshot, doc, getDoc, setDoc } from 'firebase/firestore';
 import { applyTheme } from '../App';
+import { safeStorage } from '../services/storage';
 import '../styles/payment-alert.css';
 
 function Home() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [nickname, setNickname] = useState(localStorage.getItem('familyNickname') || '');
+  const [nickname, setNickname] = useState(safeStorage.get('familyNickname', ''));
   const [isPromptingNickname, setIsPromptingNickname] = useState(false);
   const [hasPendingDebts, setHasPendingDebts] = useState(false);
   const [pendingDebtCount, setPendingDebtCount] = useState(0);
 
   // Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [themeMode, setThemeMode] = useState(localStorage.getItem('familyTheme') || 'dark');
-  const [accentColor, setAccentColor] = useState(localStorage.getItem('familyAccent') || '#006493');
+  const [themeMode, setThemeMode] = useState(safeStorage.get('familyTheme', 'dark'));
+  const [accentColor, setAccentColor] = useState(safeStorage.get('familyAccent', '#006493'));
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   // Month selector
@@ -33,7 +34,7 @@ function Home() {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const localNickname = localStorage.getItem('familyNickname');
+        const localNickname = safeStorage.get('familyNickname', '');
         if (localNickname) {
           setNickname(localNickname);
           // Sync existing local nickname to Firestore in case it hasn't been uploaded yet
@@ -51,13 +52,13 @@ function Home() {
             console.error("Error auto-syncing nickname to Firestore:", e);
           }
         } else {
-          // If not in localStorage, fetch from Firestore
+          // If not in safeStorage, fetch from Firestore
           try {
             const userDocRef = doc(db, 'users', currentUser.uid);
             const userDoc = await getDoc(userDocRef);
             if (userDoc.exists() && userDoc.data().nickname) {
               const firestoreNickname = userDoc.data().nickname;
-              localStorage.setItem('familyNickname', firestoreNickname);
+              safeStorage.set('familyNickname', firestoreNickname);
               setNickname(firestoreNickname);
             } else {
               setIsPromptingNickname(true);
@@ -144,7 +145,7 @@ function Home() {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      localStorage.removeItem('familyNickname');
+      safeStorage.remove('familyNickname');
       setNickname('');
       setIsSettingsOpen(false);
     } catch (error) {
@@ -155,7 +156,7 @@ function Home() {
   const saveNickname = async () => {
     if (nickname.trim() && auth.currentUser) {
       const trimmed = nickname.trim();
-      localStorage.setItem('familyNickname', trimmed);
+      safeStorage.set('familyNickname', trimmed);
       try {
         await setDoc(doc(db, 'users', auth.currentUser.uid), {
           nickname: trimmed,
@@ -170,8 +171,8 @@ function Home() {
   };
 
   const handleSaveTheme = () => {
-    localStorage.setItem('familyTheme', themeMode);
-    localStorage.setItem('familyAccent', accentColor);
+    safeStorage.set('familyTheme', themeMode);
+    safeStorage.set('familyAccent', accentColor);
     applyTheme(themeMode, accentColor);
     setIsSettingsOpen(false);
   };
