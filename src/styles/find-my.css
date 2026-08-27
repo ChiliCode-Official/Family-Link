@@ -1,8 +1,8 @@
 .find-my-container {
   display: flex;
   width: 100%;
-  height: calc(100vh - 60px);
-  height: calc(100dvh - 60px);
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   color: var(--theme-text, #fff);
   background: var(--theme-bg, #121212);
@@ -198,6 +198,38 @@
 
 .find-my-member-heading span.is-low { color: #ff6b6b; }
 
+.find-my-battery-value { display: inline-flex; align-items: center; gap: 3px; }
+
+.find-my-battery-loader {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #22f49e;
+  border-right-color: transparent;
+  padding: 2px;
+  box-sizing: border-box;
+  background: repeating-linear-gradient(90deg, #22f49e 0 4px, transparent 0 6px) left / 72% 100% no-repeat content-box;
+}
+
+.find-my-battery-loader::before {
+  content: '';
+  position: absolute;
+  top: -1.5px;
+  right: -5px;
+  width: 4px;
+  height: calc(100% + 3px);
+  background: #22f49e;
+  clip-path: polygon(0 0, 100% 0, 100% 38%, 48% 38%, 48% 62%, 100% 62%, 100% 100%, 0 100%);
+}
+
+.find-my-battery-loader svg { width: 10px; height: 10px; fill: #22f49e; }
+.find-my-battery-loader.is-low { border-color: #ff6b6b; background: repeating-linear-gradient(90deg, #ff6b6b 0 4px, transparent 0 6px) left / 35% 100% no-repeat content-box; }
+.find-my-battery-loader.is-low::before { background: #ff6b6b; }
+.find-my-battery-loader.is-low svg { fill: #ff6b6b; }
+
 .find-my-member-meta {
   margin-top: 3px;
   color: var(--theme-text-variant, #aaa);
@@ -358,21 +390,29 @@
   white-space: nowrap;
 }
 
-.find-my-popup { display: flex; flex-direction: column; gap: 3px; text-align: center; }
+.find-my-popup { display: flex; min-width: 130px; flex-direction: column; align-items: center; gap: 5px; text-align: center; }
 .find-my-popup strong { color: #1d1d1d; font-size: 0.78rem; }
 .find-my-popup span { color: #666; font-size: 0.64rem; }
+.find-my-popup-battery { display: inline-flex; align-items: center; gap: 4px; color: #333 !important; }
+.find-my-popup-directions { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 0; border-radius: 9px; color: #fff; background: #006493; cursor: pointer; font-size: 0.68rem; font-weight: 700; }
+.find-my-map-loader { position: relative; display: inline-flex; width: 17px; height: 19px; align-items: flex-start; justify-content: center; color: currentColor; }
+.find-my-map-loader svg { position: relative; z-index: 1; width: 15px; height: 18px; fill: currentColor; animation: findMyMapPin 1.2s ease-in-out infinite; }
+.find-my-map-loader svg path { fill: currentColor; }
+.find-my-map-loader i { position: absolute; bottom: 0; width: 14px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.22; transform: scaleX(0.72); }
 
 @keyframes findMyPulse {
   0% { transform: scale(0.78); opacity: 0.85; }
   100% { transform: scale(1.45); opacity: 0; }
 }
 
+@keyframes findMyMapPin { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-1px); } }
+
 @media (prefers-reduced-motion: reduce) {
   .find-my-marker-halo { animation: none; }
 }
 
 @media (max-width: 768px) {
-  .find-my-container { position: relative; height: calc(100vh - 65px); height: calc(100dvh - 65px); }
+  .find-my-container { position: relative; height: 100vh; height: 100dvh; }
   .find-my-map-wrap { position: absolute; inset: 0; }
   .find-my-family-button { display: flex; }
 

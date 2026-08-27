@@ -49,6 +49,23 @@ const createAvatarIcon = (member, isSelected) => {
   });
 };
 
+function BatteryLoader({ level }) {
+  return (
+    <span className={`find-my-battery-loader ${level < 20 ? 'is-low' : ''}`} aria-label={`Batería ${level}%`}>
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z" /></svg>
+    </span>
+  );
+}
+
+function MapPinLoader() {
+  return (
+    <span className="find-my-map-loader" aria-hidden="true">
+      <svg viewBox="0 0 24 30"><path d="M12 1.5C6.75 1.5 2.5 5.6 2.5 10.65c0 6.55 7.9 15.13 9.5 16.82 1.6-1.69 9.5-10.27 9.5-16.82C21.5 5.6 17.25 1.5 12 1.5Zm0 13.2a3.95 3.95 0 1 1 0-7.9 3.95 3.95 0 0 1 0 7.9Z" /></svg>
+      <i />
+    </span>
+  );
+}
+
 function FindMy() {
   const locationWatchRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
@@ -243,7 +260,7 @@ function FindMy() {
                   <div className="find-my-member-heading">
                     <strong>{member.name}{member.id === effectiveUserId ? ' (Tú)' : ''}</strong>
                     {member.battery != null && (
-                      <span className={member.battery < 20 ? 'is-low' : ''}>{member.battery}%</span>
+                      <span className={`find-my-battery-value ${member.battery < 20 ? 'is-low' : ''}`}><BatteryLoader level={member.battery} />{member.battery}%</span>
                     )}
                   </div>
                   <div className="find-my-member-meta">
@@ -257,7 +274,7 @@ function FindMy() {
                         event.stopPropagation();
                         window.open(`https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`, '_blank');
                       }}
-                    >Cómo llegar <span aria-hidden="true">›</span></button>
+                    ><MapPinLoader />Cómo llegar <span aria-hidden="true">›</span></button>
                   )}
                 </div>
               </article>
@@ -271,7 +288,7 @@ function FindMy() {
           <button className="find-my-family-button" onClick={() => setPanelOpen(true)}>
             Familia <span>{locations.length}</span>
           </button>
-          <button className="find-my-locate-button" onClick={locateMe} aria-label="Centrar en mi ubicación" title="Centrar en mi ubicación">⌖</button>
+          <button className="find-my-locate-button" onClick={locateMe} aria-label="Centrar en mi ubicación" title="Centrar en mi ubicación"><MapPinLoader /></button>
         </div>
 
         <MapContainer center={mapCenter} zoom={mapZoom} zoomControl>
@@ -291,6 +308,13 @@ function FindMy() {
                 <div className="find-my-popup">
                   <strong>{member.name}</strong>
                   <span>{formatLastSeen(member.lastSeen)}</span>
+                  {member.battery != null && <span className="find-my-popup-battery"><BatteryLoader level={member.battery} /> Batería {member.battery}%</span>}
+                  {member.latitude && member.longitude && (
+                    <button
+                      className="find-my-popup-directions"
+                      onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`, '_blank')}
+                    ><MapPinLoader />Cómo llegar</button>
+                  )}
                 </div>
               </Popup>
             </Marker>
