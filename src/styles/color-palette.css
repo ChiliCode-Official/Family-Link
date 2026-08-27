@@ -14,7 +14,9 @@
 
 .palette {
   display: flex;
-  height: 75%;
+  flex-wrap: wrap;
+  height: auto;
+  min-height: 100px;
   width: 100%;
 }
 

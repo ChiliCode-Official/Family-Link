@@ -8,7 +8,7 @@ export default function StrokeText({
   text = 'FAMILY',
   strokeColor = '#A78BFA',
   fillColor = '#F8FAFC',
-  strokeWidth = 1.4,
+  strokeWidth = 0,
   drawDuration = 1.6,
   fillDelay = 0.2,
   fontSize = 36,
@@ -67,14 +67,14 @@ export default function StrokeText({
         }
 
         .${animKey}-stroke {
-          stroke: ${strokeColor};
+          stroke: ${strokeWidth > 0 ? strokeColor : 'transparent'};
           stroke-width: ${strokeWidth}px;
           stroke-dasharray: 600;
           stroke-dashoffset: 600;
           stroke-linecap: round;
           stroke-linejoin: round;
           fill: transparent;
-          animation: drawStroke-${maskId} ${drawDuration}s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          ${strokeWidth > 0 ? `animation: drawStroke-${maskId} ${drawDuration}s cubic-bezier(0.16, 1, 0.3, 1) forwards;` : ''}
         }
 
         .${animKey}-fill {
@@ -116,7 +116,7 @@ export default function StrokeText({
           fontSize={fontSize}
           fontWeight={fontWeight}
           letterSpacing={letterSpacing}
-          fontFamily="system-ui, -apple-system, sans-serif"
+          fontFamily="var(--heading)"
           className={`${animKey}-fill`}
         >
           {text}
@@ -129,7 +129,7 @@ export default function StrokeText({
           fontSize={fontSize}
           fontWeight={fontWeight}
           letterSpacing={letterSpacing}
-          fontFamily="system-ui, -apple-system, sans-serif"
+          fontFamily="var(--heading)"
           className={`${animKey}-stroke`}
         >
           {text}
