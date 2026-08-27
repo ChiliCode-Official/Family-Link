@@ -207,13 +207,13 @@
   height: 16px;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid #22f49e;
+  border: 1.5px solid #00d69e;
   border-right-color: transparent;
   padding: 2px;
   flex: 0 0 30px;
   overflow: visible;
   box-sizing: border-box;
-  background: repeating-linear-gradient(90deg, #22f49e 0 4px, transparent 0 6px) left / var(--battery-level, 72%) 100% no-repeat content-box;
+  background: repeating-linear-gradient(90deg, #00d69e 0 4px, transparent 0 6px) left / var(--battery-level, 72%) 100% no-repeat content-box;
 }
 
 .find-my-battery-loader::before {
@@ -223,15 +223,16 @@
   right: -5px;
   width: 4px;
   height: calc(100% + 3px);
-  background: #22f49e;
+  background: #00d69e;
   clip-path: polygon(0 0, 100% 0, 100% 38%, 48% 38%, 48% 62%, 100% 62%, 100% 100%, 0 100%);
 }
 
-.find-my-battery-loader svg { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; fill: #22f49e; transform: translate(-50%, -50%); }
+.find-my-battery-loader svg { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; fill: #00d69e; transform: translate(-50%, -50%); }
 .find-my-battery-loader.is-low { border-color: #ff6b6b; background: repeating-linear-gradient(90deg, #ff6b6b 0 4px, transparent 0 6px) left / var(--battery-level, 35%) 100% no-repeat content-box; }
 .find-my-battery-loader.is-low::before { background: #ff6b6b; }
 .find-my-battery-loader.is-low svg { fill: #ff6b6b; }
 .find-my-battery-loader.is-charging { animation: findMyBatteryCharge 1.8s steps(6, end) infinite; }
+.find-my-battery-loader.is-charging svg { animation: findMyBatteryBolt 1.8s ease-in-out infinite; }
 .find-my-battery-loader.is-low { animation: findMyBatteryLow 0.9s ease-in-out infinite; }
 
 .find-my-member-meta {
@@ -420,6 +421,11 @@
   0%, 100% { opacity: 1; transform: translateX(0); }
   35% { opacity: 0.65; transform: translateX(-0.5px); }
   70% { opacity: 1; transform: translateX(0.5px); }
+}
+
+@keyframes findMyBatteryBolt {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(0.9); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
 }
 
 @media (prefers-reduced-motion: reduce) {
