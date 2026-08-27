@@ -111,28 +111,3 @@ code {
   background: var(--code-bg);
 }
 
-/* Satisfying Page Entry Transitions */
-.page-route-wrapper {
-  width: 100%;
-  min-height: 100%;
-  animation: pageEnterTransition 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity, filter;
-}
-
-@keyframes pageEnterTransition {
-  0% {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .page-route-wrapper {
-    animation: none;
-  }
-}
-
