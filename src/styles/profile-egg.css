@@ -1,0 +1,232 @@
+/* From Uiverse.io by forzayt - Easter Egg Bouncing Egg Animation */
+.profile-easter-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+.easter-animation {
+  position: relative;
+  width: 150px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: scale(0.75);
+  transform-origin: center center;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.profile-easter-wrapper:hover .easter-animation {
+  transform: scale(0.85);
+}
+
+.profile-easter-wrapper:active .easter-animation {
+  transform: scale(0.7);
+}
+
+.egg {
+  position: relative;
+  width: 150px;
+  height: 200px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: linear-gradient(
+    295deg,
+    #ff595e 15%,
+    #8ac926 15%,
+    #8ac926 30%,
+    #ff595e 30%,
+    #ff595e 49%,
+    #8ac926 49%,
+    #8ac926 70%,
+    #ff595e 70%
+  );
+  overflow: hidden;
+  animation: egg-bounce 1s linear infinite;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.egg:before,
+.egg:after {
+  position: absolute;
+  content: "";
+}
+
+.egg:before {
+  width: 200px;
+  height: 100px;
+  background-color: #1982c4;
+  top: 160px;
+  box-shadow: 0 -50px #ffca3a, 0 -65px #8ac926, 0 -90px #6a4c93, 0 -95px #ffca3a;
+}
+
+.egg:after {
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  background-color: #ffca3a;
+  left: 90px;
+  top: 75px;
+  box-shadow: -40px 0 #ffca3a, 40px 0 #ffca3a, -80px 0 #ffca3a, -120px 0 #ffca3a;
+}
+
+.eyes {
+  position: absolute;
+  background-color: #333;
+  border-radius: 50%;
+  width: 20px;
+  height: 30px;
+  left: 90px;
+  top: 120px;
+  box-shadow: 20px 0 #333;
+}
+
+.eyes:before {
+  position: absolute;
+  content: "";
+  background-color: #fff;
+  width: 5px;
+  height: 12px;
+  border-radius: 50%;
+  left: 12px;
+  top: 10px;
+  box-shadow: 20px 0 #fff;
+}
+
+.eyes:after {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 30px;
+  background-color: #1982c4;
+  top: -130px;
+  left: -100px;
+}
+
+@keyframes egg-bounce {
+  0% {
+    transform: scale(1, 1) translateY(0);
+  }
+  10% {
+    transform: scale(1.1, 0.9) translateY(0);
+  }
+  30% {
+    transform: scale(0.9, 1.1) translateY(-70px) translateX(30px);
+  }
+  50% {
+    transform: scale(1.05, 0.95) translateY(0) translateX(30px) rotate(-10deg);
+  }
+  58% {
+    transform: scale(1, 1) translateY(-7px) translateX(0);
+  }
+  65% {
+    transform: scale(1, 1) translateY(0);
+  }
+  100% {
+    transform: scale(1, 1) translateY(0);
+  }
+}
+
+.easter-shadow {
+  position: absolute;
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.2);
+  width: 100px;
+  height: 20px;
+  border-radius: 50%;
+  left: 20px;
+  top: 190px;
+  animation: egg-shadow-move 1s linear infinite;
+}
+
+@keyframes egg-shadow-move {
+  0% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(0) scale(0.8);
+  }
+  30% {
+    transform: translateX(0) scale(0.8);
+  }
+  50% {
+    transform: translateX(30px) scale(0.7);
+  }
+  58% {
+    transform: translateX(20px);
+  }
+  65% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.easter-clouds {
+  position: absolute;
+  width: 350px;
+  height: 120px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cloud1,
+.cloud2,
+.cloud3 {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.85);
+  width: 70px;
+  height: 20px;
+  border-radius: 100px;
+}
+
+.cloud1:before,
+.cloud2:before,
+.cloud3:before {
+  position: absolute;
+  content: "";
+  width: 30px;
+  height: 30px;
+  top: -14px;
+  left: 15px;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+}
+
+.cloud1 {
+  top: 20px;
+  z-index: 0;
+  animation: clouds-drift 3.2s linear infinite;
+}
+
+.cloud2 {
+  top: 60px;
+  opacity: 0.6;
+  transform: scale(0.7);
+  animation: clouds-drift 2.6s linear infinite;
+}
+
+.cloud3 {
+  top: 40px;
+  opacity: 0.4;
+  transform: scale(0.9);
+  animation: clouds-drift 2.1s linear infinite;
+  z-index: 0;
+}
+
+@keyframes clouds-drift {
+  from {
+    left: 350px;
+  }
+  to {
+    left: -120px;
+  }
+}

@@ -6,6 +6,9 @@ import 'leaflet/dist/leaflet.css';
 import { auth, db } from '../services/firebase';
 import { collection, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { safeStorage } from '../services/storage';
+import { sounds } from '../services/sounds';
+import StrokeText from '../components/StrokeText';
+import SplitText from '../components/SplitText';
 import '../styles/find-my.css';
 
 function ChangeMapView({ center, zoom, panelOpen }) {
@@ -172,11 +175,13 @@ function FindMy() {
 
   const toggleSharing = () => {
     const nextValue = !isSharing;
+    sounds.playToggle(nextValue);
     setIsSharing(nextValue);
     safeStorage.set('familyShareLocation', String(nextValue));
   };
 
   const selectMember = (member) => {
+    sounds.playPop();
     setSelectedMember(member);
     if (member.latitude && member.longitude) {
       setMapCenter([member.latitude, member.longitude]);
@@ -248,9 +253,28 @@ function FindMy() {
         />
         <header className="find-my-sidebar-header">
           <div>
-            <p className="find-my-eyebrow">UBICACIÓN FAMILIAR</p>
+            <p className="find-my-eyebrow">
+              <SplitText 
+                text="UBICACIÓN FAMILIAR"
+                delay={20}
+                duration={0.4}
+                ease="power2.out"
+                splitType="chars"
+                from={{ opacity: 0, y: 8 }}
+                to={{ opacity: 1, y: 0 }}
+              />
+            </p>
             <div className="find-my-title-row">
-              <h1>Familia</h1>
+              <StrokeText 
+                text="Familia"
+                strokeColor="var(--theme-accent, #38bdf8)"
+                fillColor="var(--theme-text, #ffffff)"
+                strokeWidth={1.4}
+                drawDuration={1.2}
+                fillDelay={0.2}
+                fontSize={24}
+                fontWeight={700}
+              />
               <span className="find-my-online-count">{locations.length} en línea</span>
             </div>
           </div>
@@ -324,8 +348,25 @@ function FindMy() {
 
       <main className="find-my-map-wrap">
         <div className="find-my-map-toolbar">
-          <button className="find-my-menu-button" onClick={() => navigate('/')} aria-label="Ir al menú principal">
-            <span className="find-my-menu-arrow" aria-hidden="true">←</span><span>Ir al Menú</span>
+          <button className="find-my-menu-button" onClick={() => navigate('/')} aria-label="Ir al menú principal" type="button">
+            <div className="find-my-menu-arrow" aria-hidden="true">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 1024 1024"
+                height="22px"
+                width="22px"
+              >
+                <path
+                  d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                  fill="#000000"
+                ></path>
+                <path
+                  d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                  fill="#000000"
+                ></path>
+              </svg>
+            </div>
+            <p className="find-my-menu-text">Ir al Menú</p>
           </button>
           <button className="find-my-family-button" onClick={() => setPanelOpen(true)}>
             Familia <span>{locations.length}</span>

@@ -314,32 +314,46 @@
   height: 56px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 18px 0 9px;
-  overflow: hidden;
+  justify-content: center;
   border-radius: 16px;
-  color: #111;
-  background: #fff !important;
-  font-size: 0.95rem;
-  font-weight: 700;
+  color: #000000;
+  background: #ffffff !important;
+  font-size: 1.1rem;
+  font-weight: 600;
   text-align: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 
 .find-my-menu-arrow {
-  z-index: 1;
-  width: 43px;
-  height: 43px;
-  display: grid;
-  place-items: center;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 12px;
-  color: #000;
   background: #4ade80;
-  font-size: 1.45rem;
-  transition: width 0.4s ease;
+  z-index: 10;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.find-my-menu-button span:last-child { position: relative; z-index: 1; white-space: nowrap; }
-.find-my-menu-button:hover .find-my-menu-arrow { width: 174px; }
+.find-my-menu-text {
+  margin: 0;
+  padding: 0;
+  transform: translateX(12px);
+  color: #000000;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.find-my-menu-button:hover .find-my-menu-arrow {
+  width: 184px;
+}
 
 .find-my-family-button {
   display: none;
@@ -471,9 +485,40 @@
 @media (max-width: 768px) {
   .find-my-container { position: relative; height: 100vh; height: 100dvh; }
   .find-my-map-wrap { position: absolute; inset: 0; }
-  .find-my-map-toolbar { left: auto; }
+  .find-my-map-toolbar {
+    left: 12px;
+    right: 12px;
+    top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
   .find-my-family-button { display: flex; }
-  .find-my-menu-button { display: none; }
+  .find-my-menu-button {
+    display: flex;
+    width: 145px;
+    height: 46px;
+    font-size: 0.95rem;
+  }
+  .find-my-menu-arrow {
+    width: 38px;
+    height: 38px;
+    top: 4px;
+    left: 4px;
+  }
+  .find-my-menu-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+  .find-my-menu-text {
+    font-size: 0.88rem;
+    transform: translateX(14px);
+  }
+  .find-my-menu-button:hover .find-my-menu-arrow,
+  .find-my-menu-button:active .find-my-menu-arrow {
+    width: 137px;
+  }
 
   .find-my-sidebar {
     --sheet-drag: 0px;

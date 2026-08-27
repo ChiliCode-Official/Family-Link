@@ -1,0 +1,83 @@
+/* From Uiverse.io by arshshaikh06 - Interactive Color Palette */
+.palette-container {
+  height: 140px;
+  width: 100%;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  background: var(--theme-surface-variant, #2a2a2a);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.palette {
+  display: flex;
+  height: 75%;
+  width: 100%;
+}
+
+.palette-color {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  transition: flex 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+.palette-color span {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.palette-color:hover,
+.palette-color.is-active {
+  flex: 2.2;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 8px 24px 0px;
+  z-index: 2;
+}
+
+.palette-color:hover span,
+.palette-color.is-active span {
+  opacity: 1;
+}
+
+.palette-color.is-active::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 13px;
+  color: #fff;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+}
+
+.palette-stats {
+  height: 25%;
+  width: 100%;
+  background: var(--theme-surface, #1e1e1e);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.2em;
+  box-sizing: border-box;
+  color: var(--theme-text-variant, #bebebe);
+  font-size: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.palette-stats svg {
+  fill: currentColor;
+  transform: scale(1.1);
+}

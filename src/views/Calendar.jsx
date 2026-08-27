@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { collection, onSnapshot, addDoc, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { safeStorage } from '../services/storage';
+import StrokeText from '../components/StrokeText';
 import '../styles/event-card.css';
 import '../styles/dog.css';
 
@@ -237,7 +238,19 @@ function Calendar() {
       {/* Header */}
       <header style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: 'var(--theme-surface, var(--md-sys-color-surface))', boxShadow: 'var(--md-sys-elevation-1)' }}>
         <button className="md-btn md-btn-tonal" style={{ padding: '0 12px' }} onClick={() => navigate('/')}>←</button>
-        <h1 style={{ margin: 0, fontSize: '22px', color: 'var(--theme-text, var(--md-sys-color-on-surface))' }}>Calendario Familiar</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '22px' }}>📅</span>
+          <StrokeText 
+            text="Calendario Familiar"
+            strokeColor="var(--theme-accent, #34d399)"
+            fillColor="var(--theme-text, #ffffff)"
+            strokeWidth={1.4}
+            drawDuration={1.4}
+            fillDelay={0.2}
+            fontSize={22}
+            fontWeight={700}
+          />
+        </div>
         <button 
           className="md-btn md-btn-primary" 
           style={{ marginLeft: 'auto', backgroundColor: 'var(--theme-accent, #006493)', color: 'var(--theme-accent-text, white)' }} 

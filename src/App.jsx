@@ -1,6 +1,8 @@
 import React, { useEffect, Component } from 'react';
 import { HashRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { safeStorage } from './services/storage';
+import { sounds } from './services/sounds';
+import ClickSpark from './components/ClickSpark';
 import Home from './views/Home';
 import ScheduleSelection from './views/ScheduleSelection';
 import ScheduleView from './views/ScheduleView';
@@ -150,33 +152,64 @@ function Sidebar() {
   );
 }
 
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <div key={location.pathname} className="page-route-wrapper">
+      <Routes location={location}>
+        <Route path="/" element={<Home />} />
+        <Route path="/schedule" element={<ScheduleSelection />} />
+        <Route path="/schedule/:person" element={<ScheduleView />} />
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/find" element={<FindMy />} />
+        <Route path="/groceries" element={<Groceries />} />
+        <Route path="/todo" element={<ToDo />} />
+        <Route path="/debts" element={<Debts />} />
+        <Route path="/calculator" element={<Calculator />} />
+      </Routes>
+    </div>
+  );
+}
+
 function App() {
   useEffect(() => {
     const savedTheme = safeStorage.get('familyTheme', 'dark');
     const savedAccent = safeStorage.get('familyAccent', '#006493');
     applyTheme(savedTheme, savedAccent);
+
+    // Global subtle audio feedback for buttons, links and controls
+    const handleGlobalClick = (e) => {
+      const target = e.target.closest('button, a, input[type="checkbox"], input[type="radio"], select, .md-card, .app-sidebar-item, .box, .directions-btn, .map-dock-item');
+      if (target) {
+        // Checkboxes play specific sounds in their views, but buttons and cards get smooth tap
+        if (target.type === 'checkbox') return;
+        sounds.playTap();
+      }
+    };
+
+    window.addEventListener('click', handleGlobalClick, { capture: true, passive: true });
+    return () => window.removeEventListener('click', handleGlobalClick, { capture: true });
   }, []);
 
   return (
     <ErrorBoundary>
-      <Router>
-        <div className="app-container">
-          <Sidebar />
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/schedule" element={<ScheduleSelection />} />
-              <Route path="/schedule/:person" element={<ScheduleView />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/find" element={<FindMy />} />
-              <Route path="/groceries" element={<Groceries />} />
-              <Route path="/todo" element={<ToDo />} />
-              <Route path="/debts" element={<Debts />} />
-              <Route path="/calculator" element={<Calculator />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+      <ClickSpark
+        sparkColor="#fff"
+        sparkSize={10}
+        sparkRadius={15}
+        sparkCount={8}
+        duration={400}
+      >
+        <Router>
+          <div className="app-container">
+            <Sidebar />
+            <main className="main-content">
+              <AnimatedRoutes />
+            </main>
+          </div>
+        </Router>
+      </ClickSpark>
     </ErrorBoundary>
   );
 }

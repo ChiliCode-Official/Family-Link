@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { safeStorage } from '../services/storage';
+import { sounds } from '../services/sounds';
+import StrokeText from '../components/StrokeText';
+import BlurText from '../components/BlurText';
 import '../styles/checkbox.css';
 
 const HOUSES = [
@@ -80,6 +83,7 @@ function Groceries() {
       return;
     }
     
+    sounds.playPop();
     await addDoc(collection(db, 'groceries'), {
       text: newItemText.trim(),
       completed: false,
@@ -94,6 +98,11 @@ function Groceries() {
   };
 
   const toggleItem = async (id, currentStatus) => {
+    if (!currentStatus) {
+      sounds.playCheck();
+    } else {
+      sounds.playUncheck();
+    }
     await updateDoc(doc(db, 'groceries', id), { completed: !currentStatus });
   };
 
@@ -181,7 +190,19 @@ function Groceries() {
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         </button>
-        <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--theme-text, #ffffff)' }}>Lista del Súper</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '22px' }}>🛒</span>
+          <StrokeText 
+            text="Lista del Súper"
+            strokeColor="var(--theme-accent, #38bdf8)"
+            fillColor="var(--theme-text, #ffffff)"
+            strokeWidth={1.4}
+            drawDuration={1.4}
+            fillDelay={0.2}
+            fontSize={22}
+            fontWeight={700}
+          />
+        </div>
         {filteredItems.some(i => i.completed) && (
           <button className="md-btn" style={{ marginLeft: 'auto', color: '#ff4b4b', fontWeight: '600' }} onClick={deleteCompleted}>
             Limpiar Completados
@@ -242,12 +263,19 @@ function Groceries() {
         {/* Destination selector chips (claramente visible para evitar error de poner en general) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--theme-text-variant, #aaa)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>📍 Añadir a:</span>
-              <span style={{ color: 'var(--theme-accent, #006493)', fontWeight: '800', textTransform: 'none' }}>
+            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--theme-text-variant, #aaa)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>📍</span>
+              <BlurText 
+                text="Añadir a:"
+                delay={60}
+                animateBy="words"
+                direction="top"
+                style={{ fontSize: '12px', fontWeight: '700' }}
+              />
+              <span style={{ color: 'var(--theme-accent, #38bdf8)', fontWeight: '800', textTransform: 'none' }}>
                 {currentSelectedHouseObj.name}
               </span>
-            </label>
+            </div>
             {nickname && (
               <span style={{ fontSize: '11px', color: 'var(--theme-text-variant, #888)' }}>
                 Tu perfil: {nickname}

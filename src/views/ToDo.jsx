@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { collection, query, where, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { safeStorage } from '../services/storage';
+import { sounds } from '../services/sounds';
+import StrokeText from '../components/StrokeText';
+import SplitText from '../components/SplitText';
 import '../styles/todo-checkbox.css';
 
 function ToDo() {
@@ -52,6 +55,7 @@ function ToDo() {
 
     const userIdentifier = currentUser ? currentUser.uid : nickname;
 
+    sounds.playPop();
     await addDoc(collection(db, 'todos'), {
       text: newTodoText.trim(),
       completed: false,
@@ -65,6 +69,11 @@ function ToDo() {
 
   const handleToggleComplete = async (id, currentStatus) => {
     try {
+      if (!currentStatus) {
+        sounds.playCheck();
+      } else {
+        sounds.playUncheck();
+      }
       await updateDoc(doc(db, 'todos', id), {
         completed: !currentStatus
       });
@@ -124,11 +133,29 @@ function ToDo() {
         </button>
 
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: '700', color: 'var(--theme-text, #ffffff)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>📝</span> Mis Pendientes (To Do)
-          </h1>
-          <span style={{ fontSize: '12px', color: 'var(--theme-text-variant, #888)' }}>
-            🔒 Lista personal y privada de {nickname || currentUser?.displayName?.split(' ')[0] || 'ti'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '24px' }}>📝</span>
+            <StrokeText 
+              text="Mis Pendientes"
+              strokeColor="var(--theme-accent, #c084fc)"
+              fillColor="var(--theme-text, #ffffff)"
+              strokeWidth={1.4}
+              drawDuration={1.4}
+              fillDelay={0.2}
+              fontSize={22}
+              fontWeight={700}
+            />
+          </div>
+          <span style={{ fontSize: '12px', color: 'var(--theme-text-variant, #888)', marginTop: '2px' }}>
+            <SplitText 
+              text={`🔒 Lista personal y privada de ${nickname || currentUser?.displayName?.split(' ')[0] || 'ti'}`}
+              delay={35}
+              duration={0.5}
+              ease="power3.out"
+              splitType="words"
+              from={{ opacity: 0, y: 15 }}
+              to={{ opacity: 1, y: 0 }}
+            />
           </span>
         </div>
 
