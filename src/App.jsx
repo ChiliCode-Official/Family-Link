@@ -7,6 +7,7 @@ import ScheduleView from './views/ScheduleView';
 import Calendar from './views/Calendar';
 import Groceries from './views/Groceries';
 import ToDo from './views/ToDo';
+import FindMy from './views/FindMy';
 import Calculator from './views/Calculator';
 import Debts from './views/Debts';
 
@@ -130,6 +131,9 @@ function Sidebar() {
       <Link to="/calendar" className={`app-sidebar-item ${path === '/calendar' ? 'active' : ''}`} title="Calendario">
         📅
       </Link>
+      <Link to="/find" className={`app-sidebar-item ${path === '/find' ? 'active' : ''}`} title="Encontrar">
+        📍
+      </Link>
       <Link to="/groceries" className={`app-sidebar-item ${path === '/groceries' ? 'active' : ''}`} title="Lista del Súper">
         🛒
       </Link>
@@ -164,6 +168,7 @@ function App() {
               <Route path="/schedule" element={<ScheduleSelection />} />
               <Route path="/schedule/:person" element={<ScheduleView />} />
               <Route path="/calendar" element={<Calendar />} />
+              <Route path="/find" element={<FindMy />} />
               <Route path="/groceries" element={<Groceries />} />
               <Route path="/todo" element={<ToDo />} />
               <Route path="/debts" element={<Debts />} />

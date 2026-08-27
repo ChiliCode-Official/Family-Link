@@ -243,15 +243,21 @@ function ToDo() {
       {/* Todo List */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {filteredTodos.length === 0 && (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-variant, #888)', gap: '12px', padding: '40px 0' }}>
-            <span style={{ fontSize: '48px' }}>🎯</span>
-            <span style={{ fontSize: '16px', fontWeight: '500' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--theme-text-variant, #888)', gap: '16px', padding: '40px 0' }}>
+            {/* Animated Empty State Loader (Shoh2008) */}
+            <div style={{ padding: '20px 0 10px 0' }}>
+              <div className="todo-empty-loader"></div>
+            </div>
+
+            <span style={{ fontSize: '17px', fontWeight: '600', color: 'var(--theme-text, #ffffff)', marginTop: '8px', textAlign: 'center' }}>
               {filter === 'completadas' 
                 ? 'No tienes tareas completadas aún' 
-                : (filter === 'pendientes' ? '¡Genial! No tienes tareas pendientes' : 'Tu lista de tareas está vacía')}
+                : (filter === 'pendientes' ? '¡Todo limpio! No tienes tareas pendientes' : 'Tu lista de pendientes está vacía')}
             </span>
-            <span style={{ fontSize: '13px', opacity: 0.7 }}>
-              Agrega pendientes arriba y márcalos cuando los termines.
+            <span style={{ fontSize: '13px', opacity: 0.75, textAlign: 'center', maxWidth: '280px' }}>
+              {filter === 'completadas' 
+                ? 'Las tareas que completes aparecerán aquí.' 
+                : 'Escribe algo arriba y presiona Agregar para guardarlo en tu lista privada.'}
             </span>
           </div>
         )}
@@ -274,7 +280,7 @@ function ToDo() {
             }}
           >
             {/* Custom Animated Checkbox from Uiverse */}
-            <label className="todo-checkbox-container" style={{ margin: 0 }}>
+            <label className="container" style={{ margin: 0 }}>
               <input 
                 type="checkbox" 
                 checked={todo.completed} 
