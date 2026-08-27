@@ -426,19 +426,27 @@ function Home() {
         </div>
       )}
 
-      {/* Google Weather Card (Clean & Modern Glassmorphism) */}
+      {/* Weather card inspired by the supplied Uiverse stacked-card reference */}
       <div className="weather-card-container">
         <div 
-          className={`weather-google-card ${isWeatherOpen ? 'is-expanded' : ''}`}
+          className={`weather-uiverse ${isWeatherOpen ? 'is-expanded' : ''}`}
           onClick={() => setIsWeatherOpen(!isWeatherOpen)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              setIsWeatherOpen(!isWeatherOpen);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-expanded={isWeatherOpen}
           title="Toca para ver u ocultar detalles meteorológicos"
         >
-          <div className="weather-main-row">
-            {/* SVG Sun/Weather icon nítido y vectorial */}
-            <div className="weather-icon-sun">
-              <svg width="52" height="52" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="32" cy="32" r="16" fill="url(#sun-grad)" />
-                <g stroke="#ff9800" strokeWidth="3.5" strokeLinecap="round">
+          <div className="weather-card-front">
+            <div className="weather-animated-sun" aria-hidden="true">
+              <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle className="weather-sun-core" cx="32" cy="32" r="16" fill="url(#sun-grad)" />
+                <g className="weather-sun-rays" stroke="#ff9800" strokeWidth="3.5" strokeLinecap="round">
                   <line x1="32" y1="6" x2="32" y2="10" />
                   <line x1="32" y1="54" x2="32" y2="58" />
                   <line x1="6" y1="32" x2="10" y2="32" />
@@ -457,32 +465,35 @@ function Home() {
               </svg>
             </div>
 
-            <div className="weather-temp-info">
-              <div className="weather-temp-number">{weatherData.temp}°C</div>
-              <div className="weather-location-text">📍 {weatherData.location}</div>
+            <div className="weather-summary">
+              <div className="weather-temp-number">{weatherData.temp} °C</div>
+              <div className="weather-location-text">{weatherData.location}</div>
             </div>
-
-            <div className="weather-status-pill">
-              <span>●</span> {weatherData.healthStatus}
+            <div className="weather-expand-indicator" aria-hidden="true">
+              {isWeatherOpen ? '−' : '+'}
             </div>
           </div>
 
-          {/* Drawer Desplegable con Estadísticas */}
-          <div className="weather-details-drawer">
-            <div className="weather-grid-stats">
+          <div className="weather-card-details">
+            <div className="weather-primary-stats">
               <div className="weather-stat-item">
-                <span className="weather-stat-label">Humedad</span>
-                <span className="weather-stat-val">💧 {weatherData.humidity}%</span>
+                <span className="weather-stat-icon" aria-hidden="true">💧</span>
+                <span><strong>{weatherData.humidity}%</strong>Humedad</span>
               </div>
               <div className="weather-stat-item">
-                <span className="weather-stat-label">Viento</span>
-                <span className="weather-stat-val">💨 {weatherData.wind} km/h</span>
-              </div>
-              <div className="weather-stat-item">
-                <span className="weather-stat-label">Sensación</span>
-                <span className="weather-stat-val">🌡️ {weatherData.apparentTemp}°C</span>
+                <span className="weather-stat-icon" aria-hidden="true">〰</span>
+                <span><strong>{weatherData.wind} km/h</strong>Viento</span>
               </div>
             </div>
+            <div className="weather-secondary-stats">
+              <div className="weather-stat-item">
+                <span><strong>{weatherData.apparentTemp} °C</strong>Sensación</span>
+              </div>
+              <div className="weather-stat-item">
+                <span><strong>{weatherData.pressure} hPa</strong>Presión</span>
+              </div>
+            </div>
+            <div className="weather-health-strip">{weatherData.healthStatus}</div>
           </div>
         </div>
       </div>
