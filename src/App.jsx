@@ -154,9 +154,12 @@ function Sidebar() {
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const routeMotion = location.pathname === '/'
+    ? 'route-home'
+    : `route-${location.pathname.split('/')[1] || 'home'}`;
 
   return (
-    <div key={location.pathname} className="page-route-wrapper">
+    <div key={location.pathname} className={`page-route-wrapper ${routeMotion}`}>
       <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/schedule" element={<ScheduleSelection />} />
