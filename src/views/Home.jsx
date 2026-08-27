@@ -63,7 +63,7 @@ function FamilyEasterEgg() {
           if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) startHold();
         }}
         onKeyUp={cancelHold}
-      ><span>?</span></button>
+      ><span className="easter-egg-button-icon" aria-hidden="true"><i className="pixel-one" /><i className="pixel-two" /><i className="pixel-dots" /><i className="pixel-dots-bottom" /></span></button>
       <span className="easter-egg-coin" aria-hidden="true">🪙</span>
       <span className="easter-egg-character" aria-hidden="true">🧑🏻‍🔧</span>
       <p>Mantén presionado</p>

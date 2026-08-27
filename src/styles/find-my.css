@@ -295,6 +295,7 @@
   display: flex;
   gap: 8px;
   pointer-events: none;
+  justify-content: space-between;
 }
 
 .find-my-map-toolbar button {
@@ -306,6 +307,39 @@
   backdrop-filter: blur(14px);
   cursor: pointer;
 }
+
+.find-my-menu-button {
+  position: relative;
+  width: 192px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px 0 9px;
+  overflow: hidden;
+  border-radius: 16px;
+  color: #111;
+  background: #fff !important;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.find-my-menu-arrow {
+  z-index: 1;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #000;
+  background: #4ade80;
+  font-size: 1.45rem;
+  transition: width 0.4s ease;
+}
+
+.find-my-menu-button span:last-child { position: relative; z-index: 1; white-space: nowrap; }
+.find-my-menu-button:hover .find-my-menu-arrow { width: 174px; }
 
 .find-my-family-button {
   display: none;
@@ -340,6 +374,7 @@
   border: 0 !important;
   border-radius: 12px !important;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18) !important;
+  margin-top: 68px !important;
 }
 
 .leaflet-control-zoom a { color: #333 !important; border-color: #e8e8e8 !important; }
@@ -436,9 +471,12 @@
 @media (max-width: 768px) {
   .find-my-container { position: relative; height: 100vh; height: 100dvh; }
   .find-my-map-wrap { position: absolute; inset: 0; }
+  .find-my-map-toolbar { left: auto; }
   .find-my-family-button { display: flex; }
+  .find-my-menu-button { display: none; }
 
   .find-my-sidebar {
+    --sheet-drag: 0px;
     position: absolute;
     z-index: 1200;
     right: 10px;
@@ -454,8 +492,10 @@
     transition: transform 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .find-my-sidebar.is-open { transform: translateY(0); }
-  .find-my-panel-handle { display: block; width: 42px; height: 4px; margin: 9px auto 0; border-radius: 99px; background: color-mix(in srgb, var(--theme-text-variant, #aaa) 50%, transparent); }
+  .find-my-sidebar.is-open { transform: translateY(var(--sheet-drag)); }
+  .find-my-sidebar.is-expanded { height: min(78dvh, 680px); }
+  .find-my-panel-handle { display: block; width: 52px; height: 8px; margin: 7px auto 0; border-radius: 99px; background: color-mix(in srgb, var(--theme-text-variant, #aaa) 50%, transparent); cursor: grab; touch-action: none; }
+  .find-my-panel-handle:active { cursor: grabbing; }
   .find-my-close-panel { width: 38px; height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 11px; color: var(--theme-text, #fff); background: var(--theme-surface-variant, #2c2c2c); cursor: pointer; font-size: 1.2rem; }
   .find-my-sidebar-header { padding: 14px 20px 14px; }
   .find-my-sharing-row { margin-inline: 12px; }

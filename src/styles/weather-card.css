@@ -195,4 +195,9 @@
   .weather-card-front { padding: 16px 18px; gap: 12px; }
   .weather-animated-sun { width: 72px; height: 72px; flex-basis: 72px; }
   .weather-expand-indicator { width: 30px; height: 30px; flex-basis: 30px; }
+
+  /* Touch devices can keep :hover after a tap; clicks alone control the drawer. */
+  .weather-uiverse:not(.is-expanded):hover { height: 130px; }
+  .weather-uiverse:not(.is-expanded):hover .weather-card-front { transform: none; background: var(--theme-surface, #1e1e1e); }
+  .weather-uiverse:not(.is-expanded):hover .weather-card-details { height: 122px; opacity: 0; }
 }

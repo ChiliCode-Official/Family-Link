@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -67,6 +68,7 @@ function MapPinLoader() {
 }
 
 function FindMy() {
+  const navigate = useNavigate();
   const locationWatchRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [nickname] = useState(safeStorage.get('familyNickname', ''));
@@ -78,6 +80,9 @@ function FindMy() {
   const [panelOpen, setPanelOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 768);
   const [mapCenter, setMapCenter] = useState([19.4326, -99.1332]);
   const [mapZoom, setMapZoom] = useState(13);
+  const [sheetDrag, setSheetDrag] = useState(0);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const sheetDragStart = useRef(null);
 
   const effectiveUserId = (currentUser?.uid || nickname.toLowerCase() || 'yo').trim();
 
@@ -203,10 +208,44 @@ function FindMy() {
     return 'Hace más de un día';
   };
 
+  const startSheetDrag = (event) => {
+    if (window.innerWidth > 768) return;
+    sheetDragStart.current = event.clientY;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const moveSheetDrag = (event) => {
+    if (sheetDragStart.current === null) return;
+    const delta = event.clientY - sheetDragStart.current;
+    setSheetDrag(Math.max(-180, Math.min(180, delta)));
+  };
+
+  const endSheetDrag = () => {
+    if (sheetDragStart.current === null) return;
+    if (sheetDrag > 70) {
+      setPanelOpen(false);
+      setSheetExpanded(false);
+    }
+    if (sheetDrag < -70) {
+      setPanelOpen(true);
+      setSheetExpanded(true);
+    }
+    setSheetDrag(0);
+    sheetDragStart.current = null;
+  };
+
   return (
     <div className="find-my-container">
-      <aside className={`find-my-sidebar ${panelOpen ? 'is-open' : ''}`} aria-label="Ubicaciones de la familia">
-        <div className="find-my-panel-handle" aria-hidden="true" />
+      <aside className={`find-my-sidebar ${panelOpen ? 'is-open' : ''} ${sheetExpanded ? 'is-expanded' : ''}`} style={{ '--sheet-drag': `${sheetDrag}px` }} aria-label="Ubicaciones de la familia">
+        <div
+          className="find-my-panel-handle"
+          onPointerDown={startSheetDrag}
+          onPointerMove={moveSheetDrag}
+          onPointerUp={endSheetDrag}
+          onPointerCancel={endSheetDrag}
+          role="separator"
+          aria-label="Desliza para mostrar u ocultar la lista"
+        />
         <header className="find-my-sidebar-header">
           <div>
             <p className="find-my-eyebrow">UBICACIÓN FAMILIAR</p>
@@ -215,7 +254,7 @@ function FindMy() {
               <span className="find-my-online-count">{locations.length} en línea</span>
             </div>
           </div>
-          <button className="find-my-close-panel" onClick={() => setPanelOpen(false)} aria-label="Volver al mapa">←</button>
+          <button className="find-my-close-panel" onClick={() => { setPanelOpen(false); setSheetExpanded(false); }} aria-label="Volver al mapa">←</button>
         </header>
 
         <div className="find-my-sharing-row">
@@ -285,6 +324,9 @@ function FindMy() {
 
       <main className="find-my-map-wrap">
         <div className="find-my-map-toolbar">
+          <button className="find-my-menu-button" onClick={() => navigate('/')} aria-label="Ir al menú principal">
+            <span className="find-my-menu-arrow" aria-hidden="true">←</span><span>Ir al Menú</span>
+          </button>
           <button className="find-my-family-button" onClick={() => setPanelOpen(true)}>
             Familia <span>{locations.length}</span>
           </button>

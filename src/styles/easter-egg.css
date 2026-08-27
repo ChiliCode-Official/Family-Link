@@ -12,26 +12,33 @@
 .easter-egg-button {
   position: relative;
   z-index: 2;
-  width: 5.2rem;
-  height: 5.2rem;
+  width: 6rem;
+  height: 6rem;
   padding: 0;
   border: 0;
-  border-radius: 18px;
+  border-radius: 0;
   color: #1a120d;
   background: #da6b34;
   box-shadow: 5px 5px 0 #000;
   cursor: pointer;
   touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition: transform 0.18s ease, background 0.2s ease;
 }
 
-.easter-egg-button span {
-  display: block;
-  font-size: 2.5rem;
-  font-weight: 900;
-  line-height: 1;
-  transform: translateY(-2px);
-}
+.easter-egg-button-icon { position: relative; display: block; width: 100%; height: 100%; pointer-events: none; }
+.pixel-one, .pixel-two, .pixel-dots, .pixel-dots-bottom { position: absolute; display: block; background: #de5917; box-shadow: 2px 2px #000; }
+.pixel-one { top: 27px; left: 34px; width: 16px; height: 6px; }
+.pixel-one::before, .pixel-one::after { content: ''; position: absolute; left: 5px; width: 8px; height: 8px; background: #de5917; }
+.pixel-one::before { top: 14px; } .pixel-one::after { top: 24px; }
+.pixel-two { top: 35px; left: 27px; width: 8px; height: 8px; transform: translate(-50%, 0); }
+.pixel-two::before { content: ''; position: absolute; left: 15px; width: 8px; height: 13px; background: #de5917; }
+.pixel-two::after { content: ''; position: absolute; left: 20px; top: 16px; width: 11px; height: 5px; background: #de5917; }
+.pixel-dots, .pixel-dots-bottom { width: 5px; height: 5px; background: #000; box-shadow: none; }
+.pixel-dots { top: 27px; left: 16px; } .pixel-dots::after, .pixel-dots-bottom::after { content: ''; position: absolute; left: 50px; width: 5px; height: 5px; background: #000; }
+.pixel-dots-bottom { top: 79px; left: 16px; }
 
 .easter-egg-button:hover { background: #f5a05f; animation: easterEggWiggle 0.8s ease-in-out infinite; }
 .easter-egg-button:active,
@@ -59,6 +66,8 @@
   font-size: 0.68rem;
   font-weight: 650;
   letter-spacing: 0.04em;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 @keyframes easterEggWiggle { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
