@@ -198,20 +198,22 @@
 
 .find-my-member-heading span.is-low { color: #ff6b6b; }
 
-.find-my-battery-value { display: inline-flex; align-items: center; gap: 3px; }
+.find-my-battery-value { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; white-space: nowrap; }
 
 .find-my-battery-loader {
   position: relative;
   display: inline-flex;
-  width: 24px;
-  height: 14px;
+  width: 30px;
+  height: 16px;
   align-items: center;
   justify-content: center;
   border: 1.5px solid #22f49e;
   border-right-color: transparent;
   padding: 2px;
+  flex: 0 0 30px;
+  overflow: visible;
   box-sizing: border-box;
-  background: repeating-linear-gradient(90deg, #22f49e 0 4px, transparent 0 6px) left / 72% 100% no-repeat content-box;
+  background: repeating-linear-gradient(90deg, #22f49e 0 4px, transparent 0 6px) left / var(--battery-level, 72%) 100% no-repeat content-box;
 }
 
 .find-my-battery-loader::before {
@@ -225,8 +227,8 @@
   clip-path: polygon(0 0, 100% 0, 100% 38%, 48% 38%, 48% 62%, 100% 62%, 100% 100%, 0 100%);
 }
 
-.find-my-battery-loader svg { width: 10px; height: 10px; fill: #22f49e; }
-.find-my-battery-loader.is-low { border-color: #ff6b6b; background: repeating-linear-gradient(90deg, #ff6b6b 0 4px, transparent 0 6px) left / 35% 100% no-repeat content-box; }
+.find-my-battery-loader svg { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; fill: #22f49e; transform: translate(-50%, -50%); }
+.find-my-battery-loader.is-low { border-color: #ff6b6b; background: repeating-linear-gradient(90deg, #ff6b6b 0 4px, transparent 0 6px) left / var(--battery-level, 35%) 100% no-repeat content-box; }
 .find-my-battery-loader.is-low::before { background: #ff6b6b; }
 .find-my-battery-loader.is-low svg { fill: #ff6b6b; }
 
