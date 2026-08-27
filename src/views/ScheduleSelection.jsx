@@ -28,20 +28,13 @@ function ScheduleSelection() {
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '40px', padding: '24px' }}>
         
-        {/* Time management Lottie animation */}
-        <div className="schedule-animation" aria-label="Gestión del tiempo">
-          <span className="schedule-animation-fallback" aria-hidden="true">
-            <span className="schedule-fallback-ghost"><i /><i /></span>
-          </span>
-          <dotlottie-player
-            src="/animations/time-management.lottie"
-            autoplay
-            loop
-            mode="normal"
-            speed="1"
-            background="transparent"
-            aria-label="Animación de gestión del tiempo"
-          />
+        {/* Time management animation (works online and offline) */}
+        <div className="schedule-animation" aria-label="Animación de gestión del tiempo">
+          <div className="schedule-loader" aria-hidden="true">
+            <div className="schedule-circle" />
+            <div className="schedule-dots schedule-dots-blue">{Array.from({ length: 10 }, (_, index) => <i key={`blue-${index}`} />)}</div>
+            <div className="schedule-dots schedule-dots-red">{Array.from({ length: 10 }, (_, index) => <i key={`red-${index}`} />)}</div>
+          </div>
         </div>
 
         <h2 style={{ fontSize: '24px', margin: 0, textAlign: 'center' }}>Selecciona un horario</h2>

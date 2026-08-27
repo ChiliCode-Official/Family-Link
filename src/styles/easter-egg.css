@@ -1,0 +1,81 @@
+.easter-egg {
+  position: relative;
+  width: 100%;
+  min-height: 148px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin: 30px 0 8px;
+  isolation: isolate;
+}
+
+.easter-egg-button {
+  position: relative;
+  z-index: 2;
+  width: 5.2rem;
+  height: 5.2rem;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  color: #1a120d;
+  background: #da6b34;
+  box-shadow: 5px 5px 0 #000;
+  cursor: pointer;
+  touch-action: none;
+  transition: transform 0.18s ease, background 0.2s ease;
+}
+
+.easter-egg-button span {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1;
+  transform: translateY(-2px);
+}
+
+.easter-egg-button:hover { background: #f5a05f; animation: easterEggWiggle 0.8s ease-in-out infinite; }
+.easter-egg-button:active,
+.easter-egg.is-triggered .easter-egg-button { transform: translateY(-12px); }
+.easter-egg-button:focus-visible { outline: 3px solid var(--theme-accent, #006493); outline-offset: 4px; }
+
+.easter-egg-coin,
+.easter-egg-character {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.easter-egg-coin { top: 36px; font-size: 2rem; }
+.easter-egg-character { top: 70px; font-size: 2.2rem; }
+.easter-egg.is-triggered .easter-egg-coin { animation: easterEggCoin 1s ease-out both; }
+.easter-egg.is-triggered .easter-egg-character { animation: easterEggCharacter 0.8s ease-in-out both; }
+
+.easter-egg p {
+  position: absolute;
+  top: 88px;
+  margin: 0;
+  color: var(--theme-text-variant, #aaa);
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+@keyframes easterEggWiggle { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+@keyframes easterEggCoin {
+  0% { opacity: 0; transform: translate(0, 20px) rotateY(0deg); }
+  18% { opacity: 1; }
+  55% { opacity: 1; transform: translate(0, -110px) rotateY(180deg); }
+  100% { opacity: 0; transform: translate(0, 0) rotateY(360deg); }
+}
+@keyframes easterEggCharacter {
+  0% { opacity: 0; transform: translate(38px, 60px); }
+  20%, 65% { opacity: 1; transform: translate(38px, -2px); }
+  100% { opacity: 0; transform: translate(38px, 60px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .easter-egg-button:hover { animation: none; }
+  .easter-egg.is-triggered .easter-egg-coin,
+  .easter-egg.is-triggered .easter-egg-character { animation: none; opacity: 1; }
+}

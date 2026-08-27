@@ -7,6 +7,69 @@ import { applyTheme } from '../App';
 import { safeStorage } from '../services/storage';
 import '../styles/payment-alert.css';
 import '../styles/weather-card.css';
+import '../styles/easter-egg.css';
+
+function FamilyEasterEgg() {
+  const [isTriggered, setIsTriggered] = useState(false);
+  const holdTimer = React.useRef(null);
+
+  const playCoinSound = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const context = new AudioContext();
+      const now = context.currentTime;
+      [880, 1320].forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = 'square';
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0.0001, now + index * 0.08);
+        gain.gain.exponentialRampToValueAtTime(0.12, now + index * 0.08 + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + index * 0.08 + 0.16);
+        oscillator.connect(gain).connect(context.destination);
+        oscillator.start(now + index * 0.08);
+        oscillator.stop(now + index * 0.08 + 0.18);
+      });
+      window.setTimeout(() => context.close(), 500);
+    } catch {
+      // Audio is an enhancement; the animation still works if Web Audio is unavailable.
+    }
+  };
+
+  const startHold = () => {
+    window.clearTimeout(holdTimer.current);
+    holdTimer.current = window.setTimeout(() => {
+      setIsTriggered(true);
+      playCoinSound();
+      window.setTimeout(() => setIsTriggered(false), 1100);
+    }, 650);
+  };
+
+  const cancelHold = () => window.clearTimeout(holdTimer.current);
+
+  useEffect(() => () => window.clearTimeout(holdTimer.current), []);
+
+  return (
+    <div className={`easter-egg ${isTriggered ? 'is-triggered' : ''}`}>
+      <button
+        className="easter-egg-button"
+        type="button"
+        aria-label="Mantén presionado para descubrir una sorpresa"
+        onPointerDown={startHold}
+        onPointerUp={cancelHold}
+        onPointerLeave={cancelHold}
+        onKeyDown={(event) => {
+          if ((event.key === 'Enter' || event.key === ' ') && !event.repeat) startHold();
+        }}
+        onKeyUp={cancelHold}
+      ><span>?</span></button>
+      <span className="easter-egg-coin" aria-hidden="true">🪙</span>
+      <span className="easter-egg-character" aria-hidden="true">🧑🏻‍🔧</span>
+      <p>Mantén presionado</p>
+    </div>
+  );
+}
 
 function Home() {
   const navigate = useNavigate();
@@ -919,6 +982,8 @@ function Home() {
           <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Calculadora</span>
         </button>
       </div>
+
+      <FamilyEasterEgg />
     </div>
   );
 }

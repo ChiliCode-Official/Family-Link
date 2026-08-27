@@ -1,74 +1,112 @@
-/* Optimized host for the Time management Lottie animation. */
+/* JkHuger time-management loader, scoped to the schedule selection screen. */
 .schedule-animation {
   position: relative;
-  width: min(72vw, 280px);
-  height: min(72vw, 280px);
+  width: min(86vw, 360px);
+  height: 150px;
   display: grid;
   place-items: center;
   overflow: hidden;
 }
 
-.schedule-animation dotlottie-player {
+.schedule-loader {
   position: relative;
-  z-index: 1;
-  display: block;
   width: 100%;
-  height: 100%;
+  height: 120px;
 }
 
-.schedule-animation-fallback {
+.schedule-circle {
   position: absolute;
-  z-index: 0;
-  display: grid;
-  width: 84px;
-  height: 84px;
-  place-items: center;
-  border-radius: 24px;
-  color: var(--theme-accent-text, #fff);
-  background: var(--theme-accent, #006493);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
-  animation: scheduleFallbackPulse 1.8s ease-in-out infinite;
+  z-index: 2;
+  top: 20px;
+  left: -50px;
+  width: 0;
+  height: 0;
+  border: 40px solid #fdd835;
+  border-radius: 50%;
+  border-right-color: transparent;
+  animation: scheduleMove 5s linear infinite;
 }
 
-.schedule-fallback-ghost {
-  position: relative;
-  display: block;
-  width: 42px;
-  height: 48px;
-  border-radius: 22px 22px 10px 10px;
-  background: #fff;
-  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.16));
-}
-
-.schedule-fallback-ghost::after {
+.schedule-circle::before,
+.schedule-circle::after {
   content: '';
   position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 12px;
-  background: #fff;
-  clip-path: polygon(0 0, 16% 65%, 33% 0, 50% 65%, 67% 0, 84% 65%, 100% 0, 100% 100%, 0 100%);
-}
-
-.schedule-fallback-ghost i {
-  position: absolute;
-  z-index: 1;
-  top: 18px;
-  width: 7px;
-  height: 10px;
+  top: -40px;
+  left: -40px;
+  width: 0;
+  height: 0;
+  border: 40px solid #fdd835;
   border-radius: 50%;
-  background: var(--theme-accent, #006493);
+  border-right-color: transparent;
 }
 
-.schedule-fallback-ghost i:first-child { left: 10px; }
-.schedule-fallback-ghost i:last-child { right: 10px; }
+.schedule-circle::before { animation: scheduleChompOne 0.25s ease-in-out infinite; }
+.schedule-circle::after { animation: scheduleChompTwo 0.25s ease-in-out infinite; }
 
-@keyframes scheduleFallbackPulse {
-  0%, 100% { transform: translateY(2px); opacity: 0.8; }
-  50% { transform: translateY(-3px); opacity: 1; }
+.schedule-dots {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  display: flex;
+  width: 300px;
+  justify-content: center;
+  transform: translateX(-50%);
+}
+
+.schedule-dots i {
+  width: 8px;
+  height: 8px;
+  margin: 0 7px;
+  border-radius: 50%;
+}
+
+.schedule-dots-blue i { background: #1e88e5; animation: scheduleDotBlue 5s linear infinite; }
+.schedule-dots-red { top: 66px; left: calc(50% + 8px); }
+.schedule-dots-red i { background: #f44336; opacity: 0; animation: scheduleDotRed 5s linear infinite; }
+
+.schedule-dots i:nth-child(1) { animation-delay: 0s; }
+.schedule-dots i:nth-child(2) { animation-delay: 0.25s; }
+.schedule-dots i:nth-child(3) { animation-delay: 0.5s; }
+.schedule-dots i:nth-child(4) { animation-delay: 0.75s; }
+.schedule-dots i:nth-child(5) { animation-delay: 1s; }
+.schedule-dots i:nth-child(6) { animation-delay: 1.25s; }
+.schedule-dots i:nth-child(7) { animation-delay: 1.5s; }
+.schedule-dots i:nth-child(8) { animation-delay: 1.75s; }
+.schedule-dots i:nth-child(9) { animation-delay: 1.9s; }
+.schedule-dots i:nth-child(10) { animation-delay: 2.1s; }
+.schedule-dots-red i:nth-child(1) { animation-delay: 4.6s; }
+.schedule-dots-red i:nth-child(2) { animation-delay: 4.5s; }
+.schedule-dots-red i:nth-child(3) { animation-delay: 4.25s; }
+.schedule-dots-red i:nth-child(4) { animation-delay: 4s; }
+.schedule-dots-red i:nth-child(5) { animation-delay: 3.75s; }
+.schedule-dots-red i:nth-child(6) { animation-delay: 3.5s; }
+.schedule-dots-red i:nth-child(7) { animation-delay: 3.25s; }
+.schedule-dots-red i:nth-child(8) { animation-delay: 3s; }
+.schedule-dots-red i:nth-child(9) { animation-delay: 2.75s; }
+.schedule-dots-red i:nth-child(10) { animation-delay: 2.5s; }
+
+@keyframes scheduleChompOne { 50% { transform: rotate(45deg); } }
+@keyframes scheduleChompTwo { 50% { transform: rotate(-45deg); } }
+@keyframes scheduleMove {
+  0%, 100% { left: -50px; transform: rotateY(0deg); }
+  48% { transform: rotateY(0deg); }
+  50% { left: calc(100% + 10px); transform: rotateY(180deg); }
+}
+@keyframes scheduleDotBlue {
+  0%, 4% { background: #1e88e5; opacity: 1; }
+  5%, 94% { background: #f44336; opacity: 0; }
+  95%, 100% { background: #1e88e5; opacity: 1; }
+}
+@keyframes scheduleDotRed {
+  0%, 4% { background: #f44336; opacity: 1; }
+  5%, 94% { opacity: 0; }
+  95%, 100% { background: #f44336; opacity: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .schedule-animation-fallback { animation: none; }
+  .schedule-circle,
+  .schedule-circle::before,
+  .schedule-circle::after,
+  .schedule-dots i { animation: none; }
+  .schedule-dots-red i { opacity: 0; }
 }
