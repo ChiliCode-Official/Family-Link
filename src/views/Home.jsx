@@ -702,6 +702,7 @@ function Home() {
 
       {/* Main Menu */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '16px', width: '100%' }}>
+        {/* 1. Horarios */}
         <button 
           className="md-card md-card-elevated" 
           style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
@@ -713,6 +714,7 @@ function Home() {
           <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Horarios</span>
         </button>
 
+        {/* 2. Calendario */}
         <button 
           className="md-card md-card-elevated" 
           style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
@@ -724,6 +726,7 @@ function Home() {
           <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Calendario</span>
         </button>
 
+        {/* 3. Lista del Súper */}
         <button 
           className="md-card md-card-elevated" 
           style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
@@ -735,27 +738,40 @@ function Home() {
           <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Lista del Súper</span>
         </button>
 
-        {/* New sections */}
+        {/* 4. To Do (Nueva página) */}
         <button 
           className="md-card md-card-elevated" 
           style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
-          onClick={() => navigate('/calculator')}
+          onClick={() => navigate('/todo')}
         >
-          <div style={{ background: 'var(--tag-yellow)', padding: '12px', borderRadius: '50%' }}>
-            🧮
+          <div style={{ background: 'var(--tag-purple, #f0dbff)', padding: '12px', borderRadius: '50%' }}>
+            📝
           </div>
-          <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Calculadora</span>
+          <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>To Do</span>
         </button>
 
+        {/* 5. Cobrar */}
         <button 
           className="md-card md-card-elevated" 
           style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
           onClick={() => navigate('/debts')}
         >
-          <div style={{ background: 'var(--tag-green)', padding: '12px', borderRadius: '50%' }}>
+          <div style={{ background: 'var(--tag-green, #74f8b6)', padding: '12px', borderRadius: '50%' }}>
             💸
           </div>
           <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Cobrar</span>
+        </button>
+
+        {/* 6. Calculadora */}
+        <button 
+          className="md-card md-card-elevated" 
+          style={{ border: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px', height: '120px' }}
+          onClick={() => navigate('/calculator')}
+        >
+          <div style={{ background: 'var(--tag-yellow, #e4e37f)', padding: '12px', borderRadius: '50%' }}>
+            🧮
+          </div>
+          <span style={{ fontSize: '18px', fontWeight: '500', color: 'var(--md-sys-color-on-surface)' }}>Calculadora</span>
         </button>
       </div>
     </div>

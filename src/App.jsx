@@ -6,6 +6,7 @@ import ScheduleSelection from './views/ScheduleSelection';
 import ScheduleView from './views/ScheduleView';
 import Calendar from './views/Calendar';
 import Groceries from './views/Groceries';
+import ToDo from './views/ToDo';
 import Calculator from './views/Calculator';
 import Debts from './views/Debts';
 
@@ -132,11 +133,14 @@ function Sidebar() {
       <Link to="/groceries" className={`app-sidebar-item ${path === '/groceries' ? 'active' : ''}`} title="Lista del Súper">
         🛒
       </Link>
-      <Link to="/calculator" className={`app-sidebar-item ${path === '/calculator' ? 'active' : ''}`} title="Calculadora">
-        🧮
+      <Link to="/todo" className={`app-sidebar-item ${path === '/todo' ? 'active' : ''}`} title="To Do">
+        📝
       </Link>
       <Link to="/debts" className={`app-sidebar-item ${path === '/debts' ? 'active' : ''}`} title="Cobrar/Deudas">
         💸
+      </Link>
+      <Link to="/calculator" className={`app-sidebar-item ${path === '/calculator' ? 'active' : ''}`} title="Calculadora">
+        🧮
       </Link>
     </aside>
   );
@@ -161,8 +165,9 @@ function App() {
               <Route path="/schedule/:person" element={<ScheduleView />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/groceries" element={<Groceries />} />
-              <Route path="/calculator" element={<Calculator />} />
+              <Route path="/todo" element={<ToDo />} />
               <Route path="/debts" element={<Debts />} />
+              <Route path="/calculator" element={<Calculator />} />
             </Routes>
           </main>
         </div>
