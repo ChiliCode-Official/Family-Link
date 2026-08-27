@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { safeStorage } from '../services/storage';
 import '../styles/checkbox.css';
 
 const HOUSES = [
@@ -34,8 +35,8 @@ function Groceries() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [newItemText, setNewItemText] = useState('');
-  const [nickname, setNickname] = useState(localStorage.getItem('familyNickname') || '');
-  const [selectedHouse, setSelectedHouse] = useState(() => getDefaultHouseForNickname(localStorage.getItem('familyNickname') || ''));
+  const [nickname, setNickname] = useState(safeStorage.get('familyNickname', ''));
+  const [selectedHouse, setSelectedHouse] = useState(() => getDefaultHouseForNickname(safeStorage.get('familyNickname', '')));
   const [activeHouseFilter, setActiveHouseFilter] = useState('Todas');
   
   // Suggestions state
