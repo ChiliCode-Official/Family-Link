@@ -75,7 +75,7 @@ function FindMy() {
   const [isSharing, setIsSharing] = useState(safeStorage.get('familyShareLocation', 'true') === 'true');
   const [batteryLevel, setBatteryLevel] = useState(null);
   const [geoError, setGeoError] = useState(null);
-  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 768);
   const [mapCenter, setMapCenter] = useState([19.4326, -99.1332]);
   const [mapZoom, setMapZoom] = useState(13);
 
@@ -215,7 +215,7 @@ function FindMy() {
               <span className="find-my-online-count">{locations.length} en línea</span>
             </div>
           </div>
-          <button className="find-my-close-panel" onClick={() => setPanelOpen(false)} aria-label="Cerrar lista">×</button>
+          <button className="find-my-close-panel" onClick={() => setPanelOpen(false)} aria-label="Volver al mapa">←</button>
         </header>
 
         <div className="find-my-sharing-row">
