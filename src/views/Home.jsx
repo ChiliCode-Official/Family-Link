@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from '../services/firebase';
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { collection, query, where, onSnapshot, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { applyTheme } from '../App';
 import '../styles/payment-alert.css';
 
@@ -20,10 +20,11 @@ function Home() {
   const [accentColor, setAccentColor] = useState(localStorage.getItem('familyAccent') || '#006493');
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
-  // Month selector
+  // Month selector & Events
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [isMonthMenuOpen, setIsMonthMenuOpen] = useState(false);
   const [events, setEvents] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
   const [userSchedule, setUserSchedule] = useState([]);
 
   const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -121,8 +122,9 @@ function Home() {
 
   useEffect(() => {
     const unsubEvents = onSnapshot(collection(db, 'events'), (snapshot) => {
-      const allEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const monthEvents = allEvents.filter(e => {
+      const fetchedEvents = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllEvents(fetchedEvents);
+      const monthEvents = fetchedEvents.filter(e => {
         if (!e.dateMs) return false;
         const d = new Date(e.dateMs);
         return d.getMonth() === selectedMonth && d.getFullYear() === new Date().getFullYear();
@@ -131,6 +133,18 @@ function Home() {
     });
     return () => unsubEvents();
   }, [selectedMonth]);
+
+  const handleCompleteEvent = async (eventId, e) => {
+    if (e) e.stopPropagation();
+    if (!eventId) return;
+    try {
+      await updateDoc(doc(db, 'events', eventId), {
+        completed: true
+      });
+    } catch (err) {
+      console.error("Error al completar el evento:", err);
+    }
+  };
 
   const handleLogin = async () => {
     const provider = new GoogleAuthProvider();
@@ -240,6 +254,13 @@ function Home() {
 
   const carouselDays = getDaysForCarousel();
   const nextEvent = events.length > 0 ? events[0] : null;
+
+  // Eventos caducados (cuya fecha en milisegundos es anterior al inicio del día de hoy y no están completados)
+  const startOfTodayMs = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+  const expiredEvents = allEvents.filter(e => {
+    if (!e.dateMs) return false;
+    return e.dateMs < startOfTodayMs && !e.completed;
+  }).sort((a, b) => b.dateMs - a.dateMs);
 
   return (
     <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', flex: 1, backgroundColor: 'var(--theme-bg, var(--md-sys-color-background))', width: '100%', maxWidth: '1200px', margin: '0 auto', boxSizing: 'border-box' }}>
@@ -578,6 +599,105 @@ function Home() {
           </div>
         </div>
       </div>
+
+      {/* Alerta de Eventos Caducados */}
+      {expiredEvents.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+          <div 
+            className="md-card md-card-elevated" 
+            style={{ 
+              width: '100%', 
+              maxWidth: '800px', 
+              borderRadius: '24px', 
+              padding: '20px', 
+              backgroundColor: 'var(--md-sys-color-error-container, #ffdad6)', 
+              color: 'var(--md-sys-color-on-error-container, #410002)', 
+              border: '1px solid rgba(186, 26, 26, 0.2)',
+              boxShadow: '0 8px 20px rgba(186, 26, 26, 0.12)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '14px'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '22px', animation: 'pulse-alert 2s infinite', display: 'inline-block' }}>⚠️</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Eventos Caducados</h3>
+                  <p style={{ margin: '2px 0 0 0', fontSize: '12px', opacity: 0.85 }}>
+                    Ya pasaron su fecha y están pendientes. ¡Táchalos cuando estén listos!
+                  </p>
+                </div>
+              </div>
+              <span style={{ 
+                backgroundColor: 'var(--md-sys-color-error, #ba1a1a)', 
+                color: 'white', 
+                padding: '4px 10px', 
+                borderRadius: '9999px', 
+                fontSize: '12px', 
+                fontWeight: 'bold' 
+              }}>
+                {expiredEvents.length}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {expiredEvents.map((ev) => {
+                const evDate = new Date(ev.dateMs);
+                const dateString = `${evDate.getDate()} de ${shortMonthNames[evDate.getMonth()]}`;
+                return (
+                  <div 
+                    key={ev.id} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between', 
+                      backgroundColor: 'var(--theme-surface, #ffffff)', 
+                      color: 'var(--theme-text, #1a1a1a)',
+                      padding: '12px 16px', 
+                      borderRadius: '16px', 
+                      gap: '12px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.06)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', overflow: 'hidden' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '15px', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                        {ev.title}
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--theme-text-variant, #666)' }}>
+                        📅 Venció el {dateString} {ev.assignedTo ? `• 👤 ${ev.assignedTo}` : ''}
+                      </span>
+                    </div>
+
+                    <button 
+                      className="md-btn"
+                      onClick={(e) => handleCompleteEvent(ev.id, e)}
+                      title="Marcar como hecho y quitar de la lista"
+                      style={{ 
+                        backgroundColor: 'var(--md-sys-color-primary, #006493)', 
+                        color: 'white', 
+                        borderRadius: '12px', 
+                        padding: '8px 14px', 
+                        fontSize: '13px', 
+                        fontWeight: '600', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                        border: 'none',
+                        transition: 'transform 0.15s ease'
+                      }}
+                    >
+                      <span>✓</span> Tachar
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Menu */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginTop: '16px', width: '100%' }}>

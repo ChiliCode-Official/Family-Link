@@ -4,7 +4,12 @@ import { auth, db } from '../services/firebase';
 import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import '../styles/checkbox.css';
 
-const HOUSES = ['General', 'Casa Mamá', 'Casa Tlal', 'Casa Tía'];
+const HOUSES = [
+  { id: 'General', name: 'General (Todos)', icon: '🛒', shortName: 'General' },
+  { id: 'Casa Mamá', name: 'Casa Mamá', icon: '🏠', shortName: 'Mamá' },
+  { id: 'Casa Tlal', name: 'Casa Tlal', icon: '🏡', shortName: 'Tlal' },
+  { id: 'Casa Tía', name: 'Casa Tía', icon: '🛖', shortName: 'Tía' }
+];
 
 const DICTIONARY = [
   'Leche', 'Huevo', 'Pan', 'Tortillas', 'Manzanas', 'Plátanos', 'Queso', 'Jamón', 
@@ -14,13 +19,24 @@ const DICTIONARY = [
   'Papas', 'Zanahorias', 'Lechuga', 'Cerveza', 'Vino', 'Galletas', 'Pan dulce'
 ];
 
+const getDefaultHouseForNickname = (nick) => {
+  const saved = localStorage.getItem('lastSelectedGroceryHouse');
+  if (saved && HOUSES.some(h => h.id === saved)) return saved;
+  if (!nick) return 'General';
+  const n = nick.toLowerCase();
+  if (n.includes('mamá') || n.includes('mama') || n.includes('hermano') || n.includes('papá') || n.includes('papa')) return 'Casa Mamá';
+  if (n.includes('tlal') || n.includes('rodrigo') || n.includes('hannah')) return 'Casa Tlal';
+  if (n.includes('tía') || n.includes('tia')) return 'Casa Tía';
+  return 'General';
+};
+
 function Groceries() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [newItemText, setNewItemText] = useState('');
-  const [selectedHouse, setSelectedHouse] = useState('General');
-  const [activeHouseFilter, setActiveHouseFilter] = useState('Todas');
   const [nickname, setNickname] = useState(localStorage.getItem('familyNickname') || '');
+  const [selectedHouse, setSelectedHouse] = useState(() => getDefaultHouseForNickname(localStorage.getItem('familyNickname') || ''));
+  const [activeHouseFilter, setActiveHouseFilter] = useState('Todas');
   
   // Suggestions state
   const [suggestions, setSuggestions] = useState([]);
@@ -51,6 +67,11 @@ function Groceries() {
     return () => unsub();
   }, []);
 
+  const handleSelectHouse = (houseId) => {
+    setSelectedHouse(houseId);
+    localStorage.setItem('lastSelectedGroceryHouse', houseId);
+  };
+
   const handleAddItem = async () => {
     if (!newItemText.trim()) return;
     if (!auth.currentUser || !nickname) {
@@ -73,6 +94,15 @@ function Groceries() {
 
   const toggleItem = async (id, currentStatus) => {
     await updateDoc(doc(db, 'groceries', id), { completed: !currentStatus });
+  };
+
+  const handleChangeItemHouse = async (itemId, newHouse, e) => {
+    if (e) e.stopPropagation();
+    try {
+      await updateDoc(doc(db, 'groceries', itemId), { house: newHouse });
+    } catch (err) {
+      console.error("Error al cambiar la casa del ítem:", err);
+    }
   };
 
   const handleDeleteItem = async (item) => {
@@ -124,6 +154,8 @@ function Groceries() {
     return activeHouseFilter === 'Todas' || item.house === activeHouseFilter;
   });
 
+  const currentSelectedHouseObj = HOUSES.find(h => h.id === selectedHouse) || HOUSES[0];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', backgroundColor: 'var(--theme-bg, #121212)', color: 'var(--theme-text, #ffffff)', overflow: 'hidden' }}>
       {/* Header */}
@@ -157,13 +189,33 @@ function Groceries() {
       </header>
 
       {/* House Filter Tabs */}
-      <div style={{ padding: '12px 24px 4px', display: 'flex', gap: '8px', overflowX: 'auto', backgroundColor: 'var(--theme-bg, #121212)', flexShrink: 0 }}>
-        {['Todas', ...HOUSES].map(house => (
+      <div style={{ padding: '12px 24px 4px', display: 'flex', gap: '8px', overflowX: 'auto', backgroundColor: 'var(--theme-bg, #121212)', flexShrink: 0, alignItems: 'center' }}>
+        <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--theme-text-variant, #888)', textTransform: 'uppercase', letterSpacing: '0.5px', marginRight: '4px' }}>
+          Ver:
+        </span>
+        <button
+          onClick={() => setActiveHouseFilter('Todas')}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: 'none',
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '13px',
+            backgroundColor: activeHouseFilter === 'Todas' ? 'var(--theme-accent, #006493)' : 'var(--theme-surface-variant, #2c2c2c)',
+            color: activeHouseFilter === 'Todas' ? 'var(--theme-accent-text, #ffffff)' : 'var(--theme-text, #ffffff)',
+            transition: 'all 0.2s',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          ✨ Todas
+        </button>
+        {HOUSES.map(house => (
           <button
-            key={house}
+            key={house.id}
             onClick={() => {
-              setActiveHouseFilter(house);
-              if (house !== 'Todas') setSelectedHouse(house);
+              setActiveHouseFilter(house.id);
+              handleSelectHouse(house.id);
             }}
             style={{
               padding: '8px 16px',
@@ -171,24 +223,76 @@ function Groceries() {
               border: 'none',
               cursor: 'pointer',
               fontWeight: '600',
-              fontSize: '14px',
-              backgroundColor: activeHouseFilter === house ? 'var(--theme-accent, #006493)' : 'var(--theme-surface-variant, #2c2c2c)',
-              color: activeHouseFilter === house ? 'var(--theme-accent-text, #ffffff)' : 'var(--theme-text, #ffffff)',
+              fontSize: '13px',
+              backgroundColor: activeHouseFilter === house.id ? 'var(--theme-accent, #006493)' : 'var(--theme-surface-variant, #2c2c2c)',
+              color: activeHouseFilter === house.id ? 'var(--theme-accent-text, #ffffff)' : 'var(--theme-text, #ffffff)',
               transition: 'all 0.2s',
               whiteSpace: 'nowrap'
             }}
           >
-            {house}
+            {house.icon} {house.shortName}
           </button>
         ))}
       </div>
 
-      {/* Input controls */}
-      <div style={{ padding: '16px 24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
+      {/* Input controls & House destination chips */}
+      <div style={{ padding: '16px 24px', backgroundColor: 'var(--theme-surface, #1e1e1e)', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        
+        {/* Destination selector chips (claramente visible para evitar error de poner en general) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <label style={{ fontSize: '12px', fontWeight: '700', color: 'var(--theme-text-variant, #aaa)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span>📍 Añadir a:</span>
+              <span style={{ color: 'var(--theme-accent, #006493)', fontWeight: '800', textTransform: 'none' }}>
+                {currentSelectedHouseObj.name}
+              </span>
+            </label>
+            {nickname && (
+              <span style={{ fontSize: '11px', color: 'var(--theme-text-variant, #888)' }}>
+                Tu perfil: {nickname}
+              </span>
+            )}
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '2px' }}>
+            {HOUSES.map(house => {
+              const isSelected = selectedHouse === house.id;
+              return (
+                <button
+                  key={house.id}
+                  type="button"
+                  onClick={() => handleSelectHouse(house.id)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '16px',
+                    border: isSelected ? '2px solid var(--theme-accent, #006493)' : '1px solid rgba(255,255,255,0.1)',
+                    backgroundColor: isSelected ? 'rgba(var(--theme-accent-rgb, 0, 100, 147), 0.25)' : 'var(--theme-bg, #121212)',
+                    color: isSelected ? '#ffffff' : 'var(--theme-text-variant, #aaa)',
+                    fontSize: '13px',
+                    fontWeight: isSelected ? '700' : '500',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    whiteSpace: 'nowrap',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isSelected ? '0 2px 8px rgba(0,100,147, 0.3)' : 'none'
+                  }}
+                >
+                  <span>{house.icon}</span>
+                  <span>{house.name}</span>
+                  {isSelected && <span style={{ fontSize: '12px' }}>✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Input box and Add button */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', width: '100%', boxSizing: 'border-box' }}>
           <input 
             type="text" 
-            placeholder="Añadir algo a la lista..." 
+            placeholder={`Añadir a ${currentSelectedHouseObj.shortName}...`} 
             value={newItemText} 
             onChange={(e) => setNewItemText(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleAddItem()}
@@ -196,8 +300,8 @@ function Groceries() {
               flex: 1, 
               padding: '12px 16px', 
               borderRadius: '24px', 
-              border: '1.5px solid rgba(255,255,255,0.08)', 
-              fontSize: '16px', 
+              border: '1.5px solid rgba(255,255,255,0.12)', 
+              fontSize: '15px', 
               outline: 'none',
               backgroundColor: 'var(--theme-bg, #121212)',
               color: 'var(--theme-text, #ffffff)',
@@ -205,43 +309,24 @@ function Groceries() {
               minWidth: 0
             }}
           />
-          
-          {/* House selector dropdown */}
-          <div style={{ position: 'relative', display: 'inline-block', flexShrink: 0 }}>
-            <select
-              value={selectedHouse}
-              onChange={(e) => setSelectedHouse(e.target.value)}
-              style={{
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                padding: '12px 36px 12px 16px',
-                borderRadius: '24px',
-                border: '1.5px solid rgba(255,255,255,0.08)',
-                backgroundColor: 'var(--theme-bg, #121212)',
-                color: 'var(--theme-text, #ffffff)',
-                fontSize: '14px',
-                fontWeight: '600',
-                outline: 'none',
-                cursor: 'pointer',
-                transition: 'all 0.2s'
-              }}
-            >
-              {HOUSES.map(house => (
-                <option key={house} value={house}>{house}</option>
-              ))}
-            </select>
-            <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--theme-text-variant, #888)', display: 'flex', alignItems: 'center' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-            </div>
-          </div>
 
           <button 
             className="md-btn md-btn-primary" 
-            style={{ borderRadius: '24px', padding: '12px 24px', height: '45px', display: 'flex', alignItems: 'center', flexShrink: 0 }} 
+            style={{ 
+              borderRadius: '24px', 
+              padding: '12px 20px', 
+              height: '45px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '6px',
+              flexShrink: 0,
+              backgroundColor: 'var(--theme-accent, #006493)',
+              color: 'var(--theme-accent-text, #ffffff)',
+              fontWeight: '700'
+            }} 
             onClick={handleAddItem}
           >
-            Añadir
+            <span>+</span> Añadir
           </button>
         </div>
         
@@ -582,20 +667,41 @@ function Groceries() {
                 {item.text}
               </span>
               
-              {/* House Tag */}
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <span style={{
-                  fontSize: '11px',
-                  fontWeight: '700',
-                  padding: '2px 8px',
-                  borderRadius: '12px',
-                  backgroundColor: 'var(--theme-surface-variant, #2c2c2c)',
-                  color: 'var(--theme-accent, #006493)'
-                }}>
-                  🏠 {item.house || 'General'}
-                </span>
+              {/* House Tag (Interactivo para cambiar casa si hubo error al agregar) */}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                  <select
+                    value={item.house || 'General'}
+                    onChange={(e) => handleChangeItemHouse(item.id, e.target.value, e)}
+                    style={{
+                      appearance: 'none',
+                      WebkitAppearance: 'none',
+                      MozAppearance: 'none',
+                      padding: '2px 20px 2px 8px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      backgroundColor: 'var(--theme-surface-variant, #2c2c2c)',
+                      color: 'var(--theme-accent, #006493)',
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                    title="Clic para cambiar la casa asignada a este ítem"
+                  >
+                    {HOUSES.map(h => (
+                      <option key={h.id} value={h.id}>
+                        {h.icon} {h.name}
+                      </option>
+                    ))}
+                  </select>
+                  <span style={{ position: 'absolute', right: '6px', fontSize: '8px', pointerEvents: 'none', color: 'var(--theme-accent, #006493)' }}>
+                    ▼
+                  </span>
+                </div>
+
                 <span style={{ fontSize: '12px', color: 'var(--theme-text-variant, #888)' }}>
-                  Añadido por {item.authorName}
+                  Por {item.authorName}
                 </span>
               </div>
             </div>

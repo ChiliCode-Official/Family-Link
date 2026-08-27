@@ -132,7 +132,8 @@ function Calendar() {
       autoPickup: isAuto, 
       assignedTo: newEvent.assignedTo || nickname,
       creatorName: newEvent.creatorName || nickname,
-      creatorPic: newEvent.creatorPic || auth.currentUser?.photoURL || `https://ui-avatars.com/api/?name=${nickname}&background=random`
+      creatorPic: newEvent.creatorPic || auth.currentUser?.photoURL || `https://ui-avatars.com/api/?name=${nickname}&background=random`,
+      completed: newEvent.completed || false
     };
 
     if (newEvent.id) {
@@ -144,8 +145,22 @@ function Calendar() {
     resetEventState();
   };
 
+  const handleToggleComplete = async (event, e) => {
+    if (e) e.stopPropagation();
+    if (!event || !event.id) return;
+    const newStatus = !event.completed;
+    try {
+      await updateDoc(doc(db, 'events', event.id), { completed: newStatus });
+      if (selectedEvent && selectedEvent.id === event.id) {
+        setSelectedEvent({ ...selectedEvent, completed: newStatus });
+      }
+    } catch (err) {
+      console.error("Error toggling complete status:", err);
+    }
+  };
+
   const resetEventState = () => {
-    setNewEvent({ id: null, date: '', title: '', tagId: '', autoPickup: false, assignedTo: '' });
+    setNewEvent({ id: null, date: '', title: '', tagId: '', autoPickup: false, assignedTo: '', completed: false });
   };
 
   const handleSaveTag = async () => {
@@ -263,24 +278,34 @@ function Calendar() {
                 {dayEvents.map(e => {
                   const tagStyle = getTagStyle(e.tagId);
                   const isAutoAlert = String(e.tagId) === 'auto' || e.autoPickup;
+                  const isDone = !!e.completed;
 
                   return (
                     <div 
                       key={e.id} 
                       onClick={(ev) => handleEventClick(ev, e)}
-                      className={isAutoAlert ? "event-alert-auto" : ""}
+                      className={isAutoAlert && !isDone ? "event-alert-auto" : ""}
                       style={{ 
-                        backgroundColor: tagStyle.bg, 
-                        color: tagStyle.text, 
+                        backgroundColor: isDone ? 'var(--theme-surface-variant, #333333)' : tagStyle.bg, 
+                        color: isDone ? 'var(--theme-text-variant, #888888)' : tagStyle.text, 
                         fontSize: '10px', 
                         padding: '4px', 
                         borderRadius: '4px', 
                         cursor: 'pointer',
-                        lineHeight: '1.2'
+                        lineHeight: '1.2',
+                        textDecoration: isDone ? 'line-through' : 'none',
+                        opacity: isDone ? 0.65 : 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                        transition: 'all 0.2s ease'
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</div>
-                      {isAutoAlert && e.assignedTo && <div style={{ marginTop: '2px', fontSize: '9px', opacity: 0.8 }}>🚘 {e.assignedTo}</div>}
+                      <div style={{ fontWeight: isDone ? 'normal' : 'bold', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        {isDone && <span style={{ fontSize: '9px', textDecoration: 'none' }}>✓</span>}
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.title}</span>
+                      </div>
+                      {isAutoAlert && e.assignedTo && <div style={{ fontSize: '9px', opacity: 0.8 }}>🚘 {e.assignedTo}</div>}
                     </div>
                   );
                 })}
@@ -345,7 +370,16 @@ function Calendar() {
 
             {/* Event Title */}
             <div>
-              <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: 'var(--theme-text, #ffffff)' }}>{selectedEvent.title}</h2>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                <h2 style={{ margin: 0, fontSize: '22px', fontWeight: 'bold', color: 'var(--theme-text, #ffffff)', textDecoration: selectedEvent.completed ? 'line-through' : 'none' }}>
+                  {selectedEvent.title}
+                </h2>
+                {selectedEvent.completed && (
+                  <span style={{ fontSize: '12px', backgroundColor: '#4CAF50', color: 'white', padding: '2px 8px', borderRadius: '10px', fontWeight: '600' }}>
+                    Hecho ✓
+                  </span>
+                )}
+              </div>
               <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: 'var(--theme-text-variant, #aaaaaa)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span>📅</span> {selectedEvent.date} de {monthNames[month]} {year}
               </p>
@@ -368,8 +402,31 @@ function Calendar() {
               </div>
             </div>
 
+            {/* Complete / Uncomplete Quick Action */}
+            <button 
+              className="md-btn"
+              onClick={(e) => handleToggleComplete(selectedEvent, e)}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: '12px',
+                backgroundColor: selectedEvent.completed ? 'rgba(255,255,255,0.08)' : 'var(--theme-accent, #006493)',
+                color: selectedEvent.completed ? 'var(--theme-text, white)' : 'var(--theme-accent-text, white)',
+                border: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              {selectedEvent.completed ? '↩️ Desmarcar (Marcar como pendiente)' : '✅ Marcar como hecho (Tachar)'}
+            </button>
+
             {/* Actions */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', gap: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
               <button className="md-btn md-btn-tonal" onClick={handleEditClick} style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, justifyContent: 'center' }}>
                 ✏️ Editar
               </button>
@@ -459,6 +516,19 @@ function Calendar() {
                 )}
               </select>
             </div>
+
+            {/* Checkbox de Completado si se está editando */}
+            {newEvent.id && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '8px 4px', fontSize: '14px', color: 'var(--theme-text, white)' }}>
+                <input 
+                  type="checkbox" 
+                  checked={!!newEvent.completed} 
+                  onChange={e => setNewEvent({ ...newEvent, completed: e.target.checked })} 
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--theme-accent, #006493)', cursor: 'pointer' }}
+                />
+                <span>Marcar evento como completado / hecho</span>
+              </label>
+            )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', marginTop: '12px' }}>
               {newEvent.id ? (
