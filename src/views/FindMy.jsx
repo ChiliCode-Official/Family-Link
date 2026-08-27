@@ -16,16 +16,15 @@ L.Icon.Default.mergeOptions({
 });
 
 // Component to handle map centering & layout recalculation on mobile/resizing
-function ChangeMapView({ center, zoom }) {
+function ChangeMapView({ center, zoom, triggerRecalc }) {
   const map = useMap();
   
   useEffect(() => {
-    // Forzar que Leaflet detecte la altura y dimensiones reales del contenedor
     const timer = setTimeout(() => {
       map.invalidateSize();
     }, 250);
     return () => clearTimeout(timer);
-  }, [map]);
+  }, [map, triggerRecalc]);
 
   useEffect(() => {
     if (center && center[0] && center[1]) {
@@ -35,32 +34,50 @@ function ChangeMapView({ center, zoom }) {
   return null;
 }
 
-// Function to create a rich custom Apple-like avatar marker
+// Controller for custom zoom & center buttons
+function MapControls({ onZoomIn, onZoomOut, onLocateMe }) {
+  return (
+    <div className="map-floating-tools">
+      <button className="map-circle-btn" onClick={onZoomIn} title="Acercar">
+        ➕
+      </button>
+      <button className="map-circle-btn" onClick={onZoomOut} title="Alejar">
+        ➖
+      </button>
+      <button className="map-circle-btn" onClick={onLocateMe} title="Centrar en mi ubicación">
+        🎯
+      </button>
+    </div>
+  );
+}
+
+// Function to create a rich custom avatar marker matching the modern UI
 const createAvatarIcon = (member, isSelected) => {
   const initials = member.name ? member.name.substring(0, 2).toUpperCase() : '👤';
   const hasPhoto = member.photoURL;
-  const pinColor = isSelected ? '#ff5722' : (member.color || '#007aff');
+  const pinColor = isSelected ? '#4ade80' : (member.color || '#1c3829');
 
   const avatarHtml = `
     <div class="find-my-avatar-marker">
       <div class="find-my-pulse" style="background: ${pinColor}55;"></div>
       <div class="find-my-avatar-pin" style="
-        border-color: ${isSelected ? '#ff5722' : '#ffffff'};
+        border-color: ${isSelected ? '#4ade80' : '#ffffff'};
         background-color: ${pinColor};
         ${hasPhoto ? `background-image: url('${member.photoURL}');` : ''}
       ">
         ${!hasPhoto ? initials : ''}
       </div>
       <div style="
-        margin-top: 4px;
-        background: rgba(0,0,0,0.75);
+        margin-top: 5px;
+        background: #142a1e;
         color: #ffffff;
         font-size: 11px;
         font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 10px;
+        padding: 3px 10px;
+        border-radius: 12px;
         white-space: nowrap;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        border: 1px solid rgba(74, 222, 128, 0.4);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       ">
         ${member.name || 'Miembro'}
       </div>
@@ -70,13 +87,14 @@ const createAvatarIcon = (member, isSelected) => {
   return L.divIcon({
     html: avatarHtml,
     className: 'custom-avatar-pin-container',
-    iconSize: [60, 70],
+    iconSize: [60, 75],
     iconAnchor: [30, 45],
     popupAnchor: [0, -45]
   });
 };
 
 function FindMy() {
+  const mapRef = useRef(null);
   const [currentUser, setCurrentUser] = useState(null);
   const [nickname, setNickname] = useState(safeStorage.get('familyNickname', ''));
   const [locations, setLocations] = useState([]);
@@ -85,6 +103,10 @@ function FindMy() {
   const [watchId, setWatchId] = useState(null);
   const [batteryLevel, setBatteryLevel] = useState(null);
   const [geoError, setGeoError] = useState(null);
+
+  // Modern UI modes: 'map' or 'list'
+  const [viewMode, setViewMode] = useState('map'); // 'map' | 'list'
+  const [filterCategory, setFilterCategory] = useState('todos'); // 'todos' | 'movimiento' | 'bateria'
 
   const defaultCenter = [19.4326, -99.1332]; // Ciudad de México
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -117,14 +139,12 @@ function FindMy() {
   useEffect(() => {
     const locRef = collection(db, 'locations');
     const unsub = onSnapshot(locRef, (snapshot) => {
-      // Map and deduplicate by clean key or name
       const mapByName = new Map();
 
       snapshot.docs.forEach(d => {
         const data = d.data();
         const memberKey = (data.name ? data.name.trim().toLowerCase() : d.id);
         
-        // Mantener el documento más reciente si hay duplicados históricos
         if (!mapByName.has(memberKey) || (data.lastSeen && data.lastSeen > (mapByName.get(memberKey).lastSeen || 0))) {
           mapByName.set(memberKey, {
             id: d.id,
@@ -136,7 +156,6 @@ function FindMy() {
       const docs = Array.from(mapByName.values());
       setLocations(docs);
 
-      // If we have locations and no member selected, center on first or active user
       if (docs.length > 0 && !selectedMember) {
         const myDoc = docs.find(d => d.id === effectiveUserId || (d.name && d.name.toLowerCase() === (nickname || '').toLowerCase()));
         if (myDoc && myDoc.latitude) {
@@ -182,7 +201,7 @@ function FindMy() {
         (error) => {
           console.warn("Error de geolocalización:", error.message);
           if (error.code === 1) {
-            setGeoError("Permiso de ubicación bloqueado. Actívalo en la barra de direcciones o ajustes de tu navegador para que se recuerde siempre.");
+            setGeoError("Permiso de ubicación bloqueado. Actívalo en la barra de direcciones de tu navegador.");
           }
         },
         { enableHighAccuracy: true, maximumAge: 30000, timeout: 20000 }
@@ -209,10 +228,30 @@ function FindMy() {
     if (member.latitude && member.longitude) {
       setMapCenter([member.latitude, member.longitude]);
       setMapZoom(16);
+      setViewMode('map');
     }
   };
 
-  // Helper to format last seen
+  const handleLocateMe = () => {
+    const myDoc = locations.find(d => d.id === effectiveUserId || (d.name && d.name.toLowerCase() === (nickname || '').toLowerCase()));
+    if (myDoc && myDoc.latitude) {
+      setMapCenter([myDoc.latitude, myDoc.longitude]);
+      setMapZoom(16);
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        setMapCenter([pos.coords.latitude, pos.coords.longitude]);
+        setMapZoom(16);
+      });
+    }
+  };
+
+  // Filtered members by chip
+  const filteredMembers = locations.filter(member => {
+    if (filterCategory === 'movimiento') return (member.speed || 0) > 3;
+    if (filterCategory === 'bateria') return member.battery !== undefined && member.battery !== null && member.battery < 25;
+    return true;
+  });
+
   const formatLastSeen = (timestamp) => {
     if (!timestamp) return 'Desconocido';
     const diff = Math.floor((Date.now() - timestamp) / 1000);
@@ -224,16 +263,75 @@ function FindMy() {
 
   return (
     <div className="find-my-container">
-      {/* Sidebar List (Apple Find My style) */}
-      <div className="find-my-sidebar">
+      {/* Top Floating Bar (Segmented Switch & Search Circle) */}
+      <div className="map-top-bar">
+        <div className="map-view-switcher">
+          <button 
+            className={`map-switch-btn ${viewMode === 'map' ? 'active' : ''}`}
+            onClick={() => setViewMode('map')}
+          >
+            🗺️ Mapa
+          </button>
+          <button 
+            className={`map-switch-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            📋 Lista ({locations.length})
+          </button>
+        </div>
+
+        <button 
+          className="map-circle-btn" 
+          onClick={handleLocateMe}
+          title="Mi Ubicación"
+        >
+          🔍
+        </button>
+      </div>
+
+      {/* Horizontal Filter Chips */}
+      <div className="map-filter-chips">
+        <button 
+          className={`map-chip ${filterCategory === 'todos' ? 'active' : ''}`}
+          onClick={() => setFilterCategory('todos')}
+        >
+          👥 Todos ({locations.length})
+        </button>
+        <button 
+          className={`map-chip ${filterCategory === 'movimiento' ? 'active' : ''}`}
+          onClick={() => setFilterCategory('movimiento')}
+        >
+          🚗 En Movimiento
+        </button>
+        <button 
+          className={`map-chip ${filterCategory === 'bateria' ? 'active' : ''}`}
+          onClick={() => setFilterCategory('bateria')}
+        >
+          🪫 Batería Baja
+        </button>
+      </div>
+
+      {/* Floating Right Map Controls (Zoom & Location) */}
+      {viewMode === 'map' && (
+        <MapControls 
+          onZoomIn={() => setMapZoom(z => Math.min(z + 1, 18))}
+          onZoomOut={() => setMapZoom(z => Math.max(z - 1, 3))}
+          onLocateMe={handleLocateMe}
+        />
+      )}
+
+      {/* Sidebar / Fullscreen List on mobile */}
+      <div className={`find-my-sidebar ${viewMode === 'list' ? 'mobile-full' : ''}`} style={{
+        display: (viewMode === 'list' || window.innerWidth > 768) ? 'flex' : 'none'
+      }}>
         {/* Header */}
-        <div style={{ padding: '20px 24px 16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '80px 24px 16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: 'var(--theme-text, #ffffff)' }}>
-              📍 Encontrar
+            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>
+              📍 Familia
             </h1>
-            <span style={{ fontSize: '13px', background: 'rgba(0, 122, 255, 0.15)', color: '#007aff', padding: '4px 10px', borderRadius: '12px', fontWeight: '600' }}>
-              {locations.length} {locations.length === 1 ? 'persona' : 'personas'}
+            <span style={{ fontSize: '13px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80', padding: '4px 10px', borderRadius: '14px', fontWeight: '600' }}>
+              {locations.length} en línea
             </span>
           </div>
 
@@ -244,15 +342,15 @@ function FindMy() {
             alignItems: 'center', 
             marginTop: '16px', 
             padding: '12px 16px', 
-            backgroundColor: 'var(--theme-bg, #121212)', 
-            borderRadius: '16px',
-            border: '1px solid rgba(255,255,255,0.04)'
+            backgroundColor: '#142a1e', 
+            borderRadius: '18px',
+            border: '1px solid rgba(74, 222, 128, 0.2)'
           }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--theme-text, #ffffff)' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>
                 Compartir mi ubicación
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--theme-text-variant, #888)' }}>
+              <span style={{ fontSize: '11px', color: '#a3c4b0' }}>
                 {isSharing ? 'Visible para la familia' : 'Ubicación pausada'}
               </span>
             </div>
@@ -267,7 +365,7 @@ function FindMy() {
               <span style={{
                 position: 'absolute',
                 top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: isSharing ? '#34c759' : '#39393d',
+                backgroundColor: isSharing ? '#4ade80' : '#2e4a3b',
                 borderRadius: '34px',
                 transition: '0.3s'
               }}>
@@ -295,18 +393,14 @@ function FindMy() {
         </div>
 
         {/* Members List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--theme-text-variant, #888)', paddingLeft: '8px', marginBottom: '4px' }}>
-            Personas
-          </div>
-
-          {locations.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--theme-text-variant, #888)', fontSize: '14px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {filteredMembers.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '40px 16px', color: '#a3c4b0', fontSize: '14px' }}>
               📡 Esperando señales de ubicación de la familia...
             </div>
           )}
 
-          {locations.map((member) => {
+          {filteredMembers.map((member) => {
             const isSelected = selectedMember?.id === member.id;
             return (
               <div 
@@ -316,10 +410,10 @@ function FindMy() {
               >
                 {/* Avatar */}
                 <div style={{
-                  width: '46px',
-                  height: '46px',
+                  width: '48px',
+                  height: '48px',
                   borderRadius: '50%',
-                  backgroundColor: '#007aff',
+                  backgroundColor: '#1c3829',
                   backgroundImage: member.photoURL ? `url(${member.photoURL})` : 'none',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
@@ -330,32 +424,33 @@ function FindMy() {
                   fontSize: '18px',
                   color: '#fff',
                   flexShrink: 0,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                  border: '2px solid rgba(74, 222, 128, 0.4)',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
                 }}>
                   {!member.photoURL && (member.name ? member.name.substring(0, 2).toUpperCase() : '👤')}
                 </div>
 
                 {/* Info */}
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: '600', fontSize: '15px', color: 'var(--theme-text, #ffffff)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {member.name} {member.id === (currentUser?.uid || nickname) ? '(Tú)' : ''}
+                    <span style={{ fontWeight: '700', fontSize: '15px', color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {member.name} {member.id === effectiveUserId ? '(Tú)' : ''}
                     </span>
                     {member.battery !== undefined && member.battery !== null && (
-                      <span style={{ fontSize: '12px', color: member.battery < 20 ? '#ff5252' : '#34c759', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '12px', color: member.battery < 20 ? '#ff5252' : '#4ade80', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
                         🔋 {member.battery}%
                       </span>
                     )}
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--theme-text-variant, #888)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#a3c4b0' }}>
                     <span>
                       {member.speed > 3 ? `🚗 ${member.speed} km/h` : '📍 En posición'}
                     </span>
                     <span>{formatLastSeen(member.lastSeen)}</span>
                   </div>
 
-                  {/* Botón Cómo llegar con animación de radar */}
+                  {/* Botón Cómo llegar */}
                   {member.latitude && member.longitude && (
                     <div style={{ marginTop: '4px' }}>
                       <button 
@@ -378,18 +473,19 @@ function FindMy() {
         </div>
       </div>
 
-      {/* Interactive Map */}
+      {/* Interactive Map Wrap */}
       <div className="find-my-map-wrap">
         <MapContainer 
           center={mapCenter} 
           zoom={mapZoom} 
           style={{ width: '100%', height: '100%' }}
+          zoomControl={false}
         >
-          <ChangeMapView center={mapCenter} zoom={mapZoom} />
+          <ChangeMapView center={mapCenter} zoom={mapZoom} triggerRecalc={viewMode} />
           
-          {/* Free OpenStreetMap Standard Tiles (No API key, No watermark) */}
+          {/* Free OpenStreetMap Standard Tiles */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
@@ -407,20 +503,20 @@ function FindMy() {
                 }}
               >
                 <Popup>
-                  <div style={{ textAlign: 'center', padding: '4px' }}>
-                    <strong style={{ fontSize: '14px' }}>{member.name}</strong>
-                    <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                  <div style={{ textAlign: 'center', padding: '6px' }}>
+                    <strong style={{ fontSize: '15px', color: '#1c3829' }}>{member.name}</strong>
+                    <div style={{ fontSize: '12px', color: '#555', marginTop: '4px' }}>
                       Última señal: {formatLastSeen(member.lastSeen)}
                     </div>
                     {member.speed > 0 && (
-                      <div style={{ fontSize: '12px', color: '#007aff', marginTop: '2px' }}>
+                      <div style={{ fontSize: '12px', color: '#1c3829', marginTop: '2px', fontWeight: '600' }}>
                         Velocidad: {member.speed} km/h
                       </div>
                     )}
                     <div style={{ marginTop: '8px' }}>
                       <button 
                         className="directions-btn"
-                        style={{ fontSize: '11px', padding: '6px 10px', width: '100%', justifyContent: 'center' }}
+                        style={{ fontSize: '12px', padding: '6px 12px', width: '100%', justifyContent: 'center' }}
                         onClick={() => {
                           const url = `https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`;
                           window.open(url, '_blank');
@@ -436,6 +532,38 @@ function FindMy() {
             );
           })}
         </MapContainer>
+      </div>
+
+      {/* Floating Bottom Dock (Forest Theme) */}
+      <div className="map-bottom-dock">
+        <button 
+          className={`map-dock-item ${viewMode === 'map' ? 'active' : ''}`}
+          onClick={() => setViewMode('map')}
+          title="Mapa"
+        >
+          🌲
+        </button>
+        <button 
+          className={`map-dock-item ${viewMode === 'list' ? 'active' : ''}`}
+          onClick={() => setViewMode('list')}
+          title="Lista de Personas"
+        >
+          📍
+        </button>
+        <button 
+          className="map-dock-item"
+          onClick={handleLocateMe}
+          title="Centrar"
+        >
+          🎯
+        </button>
+        <div 
+          className="map-dock-avatar"
+          style={{ backgroundImage: currentUser?.photoURL ? `url(${currentUser.photoURL})` : 'none' }}
+          title={nickname || 'Tú'}
+        >
+          {!currentUser?.photoURL && (nickname ? nickname.substring(0, 2).toUpperCase() : 'YO')}
+        </div>
       </div>
     </div>
   );
