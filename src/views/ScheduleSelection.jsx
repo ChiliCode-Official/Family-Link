@@ -30,7 +30,9 @@ function ScheduleSelection() {
         
         {/* Time management Lottie animation */}
         <div className="schedule-animation" aria-label="Gestión del tiempo">
-          <span className="schedule-animation-fallback" aria-hidden="true">⏱️</span>
+          <span className="schedule-animation-fallback" aria-hidden="true">
+            <span className="schedule-fallback-ghost"><i /><i /></span>
+          </span>
           <dotlottie-player
             src="/animations/time-management.lottie"
             autoplay
