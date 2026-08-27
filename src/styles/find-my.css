@@ -1,8 +1,8 @@
 /* Find My (Apple Style UI) Styles */
 .find-my-container {
   display: flex;
-  height: 100%;
-  min-height: calc(100vh - 48px);
+  height: calc(100vh - 60px);
+  height: calc(100dvh - 60px);
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -11,21 +11,28 @@
 }
 
 .find-my-sidebar {
-  width: 380px;
+  width: 360px;
   background-color: var(--theme-surface, #1e1e1e);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   z-index: 1000;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  height: 100%;
 }
 
 .find-my-map-wrap {
   flex: 1;
   height: 100%;
+  width: 100%;
   position: relative;
   z-index: 1;
+}
+
+.find-my-map-wrap .leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #e5e3df;
 }
 
 /* Custom Marker Pulse */
@@ -96,18 +103,88 @@
   border-color: var(--theme-accent, #007aff);
 }
 
+/* Button & Pin Loader for Directions (JaydipPrajapati1910) */
+.directions-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #007aff, #0056b3);
+  color: #ffffff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.35);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  margin-top: 6px;
+  width: fit-content;
+}
+
+.directions-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.45);
+}
+
+.directions-btn:active {
+  transform: scale(0.96);
+}
+
+/* From Uiverse.io by JaydipPrajapati1910 */ 
+.directions-pin-loader {
+  width: 22px;
+  height: 22px;
+  position: relative;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.directions-pin-loader:before,
+.directions-pin-loader:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50% 50% 0 50%;
+  background: #0000;
+  background-image: radial-gradient(circle 5.5px at 50% 50%, #0000 94%, #ffffff);
+}
+
+.directions-pin-loader:after {
+  animation: pulse-ytk0dhmd 1s infinite;
+  transform: perspective(168px) translateZ(0px);
+}
+
+@keyframes pulse-ytk0dhmd {
+  to {
+    transform: perspective(168px) translateZ(84px);
+    opacity: 0;
+  }
+}
+
 /* Responsive mobile layout */
 @media (max-width: 768px) {
   .find-my-container {
-    flex-direction: column-reverse;
+    flex-direction: column;
+    height: calc(100vh - 65px);
+    height: calc(100dvh - 65px);
+  }
+  .find-my-map-wrap {
+    flex: 1;
+    min-height: 52%;
+    height: 52%;
+    order: 1;
   }
   .find-my-sidebar {
     width: 100%;
-    height: 45vh;
+    flex: 1;
+    max-height: 48%;
+    height: 48%;
     border-right: none;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .find-my-map-wrap {
-    height: 55vh;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    order: 2;
+    box-shadow: 0 -8px 20px rgba(0,0,0,0.3);
   }
 }

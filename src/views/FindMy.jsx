@@ -15,9 +15,18 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Component to handle map centering programmatically
+// Component to handle map centering & layout recalculation on mobile/resizing
 function ChangeMapView({ center, zoom }) {
   const map = useMap();
+  
+  useEffect(() => {
+    // Forzar que Leaflet detecte la altura y dimensiones reales del contenedor
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [map]);
+
   useEffect(() => {
     if (center && center[0] && center[1]) {
       map.flyTo(center, zoom || 15, { duration: 1.5 });
@@ -101,19 +110,35 @@ function FindMy() {
     return () => unsub();
   }, []);
 
-  // Firestore Sync: Listen to all family members' locations
+  // Clave única consistente: el nombre en minúsculas si existe, o el uid de Google
+  const effectiveUserId = (currentUser?.uid || (nickname ? nickname.toLowerCase() : '') || 'yo').trim();
+
+  // Firestore Sync: Listen to all family members' locations & deduplicate
   useEffect(() => {
     const locRef = collection(db, 'locations');
     const unsub = onSnapshot(locRef, (snapshot) => {
-      const docs = snapshot.docs.map(d => ({
-        id: d.id,
-        ...d.data()
-      }));
+      // Map and deduplicate by clean key or name
+      const mapByName = new Map();
+
+      snapshot.docs.forEach(d => {
+        const data = d.data();
+        const memberKey = (data.name ? data.name.trim().toLowerCase() : d.id);
+        
+        // Mantener el documento más reciente si hay duplicados históricos
+        if (!mapByName.has(memberKey) || (data.lastSeen && data.lastSeen > (mapByName.get(memberKey).lastSeen || 0))) {
+          mapByName.set(memberKey, {
+            id: d.id,
+            ...data
+          });
+        }
+      });
+
+      const docs = Array.from(mapByName.values());
       setLocations(docs);
 
       // If we have locations and no member selected, center on first or active user
       if (docs.length > 0 && !selectedMember) {
-        const myDoc = docs.find(d => d.id === (currentUser?.uid || nickname));
+        const myDoc = docs.find(d => d.id === effectiveUserId || (d.name && d.name.toLowerCase() === (nickname || '').toLowerCase()));
         if (myDoc && myDoc.latitude) {
           setMapCenter([myDoc.latitude, myDoc.longitude]);
         } else if (docs[0].latitude) {
@@ -123,11 +148,10 @@ function FindMy() {
     });
 
     return () => unsub();
-  }, [currentUser, nickname, selectedMember]);
+  }, [currentUser, nickname, selectedMember, effectiveUserId]);
 
   // Handle Location Tracking & Upload to Firestore
   useEffect(() => {
-    const myId = currentUser?.uid || nickname || 'invitado_' + Math.random().toString(36).substring(7);
     const myName = nickname || currentUser?.displayName?.split(' ')[0] || 'Yo';
     const myPhoto = currentUser?.photoURL || '';
 
@@ -138,7 +162,7 @@ function FindMy() {
           const { latitude, longitude, speed, heading, accuracy } = pos.coords;
           
           try {
-            await setDoc(doc(db, 'locations', myId), {
+            await setDoc(doc(db, 'locations', effectiveUserId), {
               name: myName,
               userId: currentUser?.uid || '',
               photoURL: myPhoto,
@@ -157,9 +181,11 @@ function FindMy() {
         },
         (error) => {
           console.warn("Error de geolocalización:", error.message);
-          setGeoError("Permite el acceso a la ubicación en tu navegador para compartir tu posición.");
+          if (error.code === 1) {
+            setGeoError("Permiso de ubicación bloqueado. Actívalo en la barra de direcciones o ajustes de tu navegador para que se recuerde siempre.");
+          }
         },
-        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+        { enableHighAccuracy: true, maximumAge: 30000, timeout: 20000 }
       );
       setWatchId(id);
     } else if (watchId) {
@@ -170,7 +196,7 @@ function FindMy() {
     return () => {
       if (watchId) navigator.geolocation.clearWatch(watchId);
     };
-  }, [isSharing, currentUser, nickname, batteryLevel]);
+  }, [isSharing, currentUser, nickname, batteryLevel, effectiveUserId]);
 
   const toggleSharing = () => {
     const nextVal = !isSharing;
@@ -328,6 +354,23 @@ function FindMy() {
                     </span>
                     <span>{formatLastSeen(member.lastSeen)}</span>
                   </div>
+
+                  {/* Botón Cómo llegar con animación de radar */}
+                  {member.latitude && member.longitude && (
+                    <div style={{ marginTop: '4px' }}>
+                      <button 
+                        className="directions-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = `https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <div className="directions-pin-loader"></div>
+                        <span>Cómo llegar</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -344,10 +387,10 @@ function FindMy() {
         >
           <ChangeMapView center={mapCenter} zoom={mapZoom} />
           
-          {/* Free OpenStreetMap Tiles with Clean Dark/Light Map style */}
+          {/* Free OpenStreetMap Standard Tiles (No API key, No watermark) */}
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
           {locations.map((member) => {
@@ -374,6 +417,19 @@ function FindMy() {
                         Velocidad: {member.speed} km/h
                       </div>
                     )}
+                    <div style={{ marginTop: '8px' }}>
+                      <button 
+                        className="directions-btn"
+                        style={{ fontSize: '11px', padding: '6px 10px', width: '100%', justifyContent: 'center' }}
+                        onClick={() => {
+                          const url = `https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <div className="directions-pin-loader" style={{ width: '16px', height: '16px' }}></div>
+                        <span>Iniciar Ruta</span>
+                      </button>
+                    </div>
                   </div>
                 </Popup>
               </Marker>
