@@ -51,7 +51,7 @@ const createAvatarIcon = (member, isSelected) => {
 
 function BatteryLoader({ level }) {
   return (
-    <span className={`find-my-battery-loader ${level < 20 ? 'is-low' : ''}`} style={{ '--battery-level': `${Math.max(0, Math.min(100, level))}%` }} aria-label={`Batería ${level}%`}>
+    <span className={`find-my-battery-loader ${level < 30 ? 'is-low' : 'is-charging'}`} style={{ '--battery-level': `${Math.max(0, Math.min(100, level))}%` }} aria-label={`Batería ${level}%`}>
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z" /></svg>
     </span>
   );
@@ -260,7 +260,7 @@ function FindMy() {
                   <div className="find-my-member-heading">
                     <strong>{member.name}{member.id === effectiveUserId ? ' (Tú)' : ''}</strong>
                     {member.battery != null && (
-                      <span className={`find-my-battery-value ${member.battery < 20 ? 'is-low' : ''}`}><BatteryLoader level={member.battery} />{member.battery}%</span>
+                      <span className={`find-my-battery-value ${member.battery < 30 ? 'is-low' : ''}`}><BatteryLoader level={member.battery} />{member.battery}%</span>
                     )}
                   </div>
                   <div className="find-my-member-meta">
