@@ -312,168 +312,13 @@ function FindMy() {
       </div>
 
       {/* Floating Right Map Controls (Zoom & Location) */}
-      {viewMode === 'map' && (
-        <MapControls 
-          onZoomIn={() => setMapZoom(z => Math.min(z + 1, 18))}
-          onZoomOut={() => setMapZoom(z => Math.max(z - 1, 3))}
-          onLocateMe={handleLocateMe}
-        />
-      )}
+      <MapControls 
+        onZoomIn={() => setMapZoom(z => Math.min(z + 1, 18))}
+        onZoomOut={() => setMapZoom(z => Math.max(z - 1, 3))}
+        onLocateMe={handleLocateMe}
+      />
 
-      {/* Sidebar / Fullscreen List on mobile */}
-      <div className={`find-my-sidebar ${viewMode === 'list' ? 'mobile-full' : ''}`} style={{
-        display: (viewMode === 'list' || window.innerWidth > 768) ? 'flex' : 'none'
-      }}>
-        {/* Header */}
-        <div style={{ padding: '80px 24px 16px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#ffffff' }}>
-              📍 Familia
-            </h1>
-            <span style={{ fontSize: '13px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80', padding: '4px 10px', borderRadius: '14px', fontWeight: '600' }}>
-              {locations.length} en línea
-            </span>
-          </div>
-
-          {/* Privacy & Sharing Toggle */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginTop: '16px', 
-            padding: '12px 16px', 
-            backgroundColor: '#142a1e', 
-            borderRadius: '18px',
-            border: '1px solid rgba(74, 222, 128, 0.2)'
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>
-                Compartir mi ubicación
-              </span>
-              <span style={{ fontSize: '11px', color: '#a3c4b0' }}>
-                {isSharing ? 'Visible para la familia' : 'Ubicación pausada'}
-              </span>
-            </div>
-
-            <label style={{ position: 'relative', display: 'inline-block', width: '46px', height: '26px', cursor: 'pointer' }}>
-              <input 
-                type="checkbox" 
-                checked={isSharing} 
-                onChange={toggleSharing} 
-                style={{ opacity: 0, width: 0, height: 0 }}
-              />
-              <span style={{
-                position: 'absolute',
-                top: 0, left: 0, right: 0, bottom: 0,
-                backgroundColor: isSharing ? '#4ade80' : '#2e4a3b',
-                borderRadius: '34px',
-                transition: '0.3s'
-              }}>
-                <span style={{
-                  position: 'absolute',
-                  content: '""',
-                  height: '20px',
-                  width: '20px',
-                  left: isSharing ? '23px' : '3px',
-                  bottom: '3px',
-                  backgroundColor: '#ffffff',
-                  borderRadius: '50%',
-                  transition: '0.3s',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                }}></span>
-              </span>
-            </label>
-          </div>
-
-          {geoError && (
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#ff5252', backgroundColor: 'rgba(255,82,82,0.1)', padding: '8px 12px', borderRadius: '10px' }}>
-              ⚠️ {geoError}
-            </div>
-          )}
-        </div>
-
-        {/* Members List */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {filteredMembers.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '40px 16px', color: '#a3c4b0', fontSize: '14px' }}>
-              📡 Esperando señales de ubicación de la familia...
-            </div>
-          )}
-
-          {filteredMembers.map((member) => {
-            const isSelected = selectedMember?.id === member.id;
-            return (
-              <div 
-                key={member.id}
-                className={`find-my-member-card ${isSelected ? 'selected' : ''}`}
-                onClick={() => handleSelectMember(member)}
-              >
-                {/* Avatar */}
-                <div style={{
-                  width: '48px',
-                  height: '48px',
-                  borderRadius: '50%',
-                  backgroundColor: '#1c3829',
-                  backgroundImage: member.photoURL ? `url(${member.photoURL})` : 'none',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontWeight: 'bold',
-                  fontSize: '18px',
-                  color: '#fff',
-                  flexShrink: 0,
-                  border: '2px solid rgba(74, 222, 128, 0.4)',
-                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
-                }}>
-                  {!member.photoURL && (member.name ? member.name.substring(0, 2).toUpperCase() : '👤')}
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: '700', fontSize: '15px', color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {member.name} {member.id === effectiveUserId ? '(Tú)' : ''}
-                    </span>
-                    {member.battery !== undefined && member.battery !== null && (
-                      <span style={{ fontSize: '12px', color: member.battery < 20 ? '#ff5252' : '#4ade80', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
-                        🔋 {member.battery}%
-                      </span>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#a3c4b0' }}>
-                    <span>
-                      {member.speed > 3 ? `🚗 ${member.speed} km/h` : '📍 En posición'}
-                    </span>
-                    <span>{formatLastSeen(member.lastSeen)}</span>
-                  </div>
-
-                  {/* Botón Cómo llegar */}
-                  {member.latitude && member.longitude && (
-                    <div style={{ marginTop: '4px' }}>
-                      <button 
-                        className="directions-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const url = `https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`;
-                          window.open(url, '_blank');
-                        }}
-                      >
-                        <div className="directions-pin-loader"></div>
-                        <span>Cómo llegar</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Interactive Map Wrap */}
+      {/* Interactive Map Wrap (Siempre presente a pantalla completa de fondo) */}
       <div className="find-my-map-wrap">
         <MapContainer 
           center={mapCenter} 
@@ -534,26 +379,202 @@ function FindMy() {
         </MapContainer>
       </div>
 
+      {/* Sidebar / Sliding Bottom Sheet on mobile (Apple Find My style) */}
+      <div 
+        className={`find-my-sidebar ${viewMode === 'list' ? 'sheet-expanded' : 'sheet-collapsed'}`}
+        onClick={() => {
+          if (viewMode === 'map') setViewMode('list');
+        }}
+      >
+        {/* Drag handle bar */}
+        <div 
+          className="bottom-sheet-handle"
+          onClick={(e) => {
+            e.stopPropagation();
+            setViewMode(v => v === 'list' ? 'map' : 'list');
+          }}
+        ></div>
+
+        {/* Header */}
+        <div style={{ padding: '8px 24px 14px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }} onClick={() => setViewMode(v => v === 'list' ? 'map' : 'list')}>
+              <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#ffffff' }}>
+                📍 Familia
+              </h1>
+              <span style={{ fontSize: '12px', color: '#a3c4b0' }}>
+                {viewMode === 'list' ? '▼' : '▲ Deslizar'}
+              </span>
+            </div>
+
+            <span style={{ fontSize: '12px', background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80', padding: '4px 10px', borderRadius: '14px', fontWeight: '600' }}>
+              {locations.length} en línea
+            </span>
+          </div>
+
+          {/* Privacy & Sharing Toggle (Visible when expanded or on desktop) */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginTop: '12px', 
+            padding: '10px 14px', 
+            backgroundColor: '#142a1e', 
+            borderRadius: '16px',
+            border: '1px solid rgba(74, 222, 128, 0.2)'
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>
+                Compartir mi ubicación
+              </span>
+              <span style={{ fontSize: '11px', color: '#a3c4b0' }}>
+                {isSharing ? 'Visible para la familia' : 'Ubicación pausada'}
+              </span>
+            </div>
+
+            <label style={{ position: 'relative', display: 'inline-block', width: '42px', height: '24px', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={isSharing} 
+                onChange={toggleSharing} 
+                style={{ opacity: 0, width: 0, height: 0 }}
+              />
+              <span style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: isSharing ? '#4ade80' : '#2e4a3b',
+                borderRadius: '34px',
+                transition: '0.3s'
+              }}>
+                <span style={{
+                  position: 'absolute',
+                  content: '""',
+                  height: '18px',
+                  width: '18px',
+                  left: isSharing ? '21px' : '3px',
+                  bottom: '3px',
+                  backgroundColor: '#ffffff',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                }}></span>
+              </span>
+            </label>
+          </div>
+
+          {geoError && (
+            <div style={{ marginTop: '10px', fontSize: '12px', color: '#ff5252', backgroundColor: 'rgba(255,82,82,0.1)', padding: '8px 12px', borderRadius: '10px' }}>
+              ⚠️ {geoError}
+            </div>
+          )}
+        </div>
+
+        {/* Members List */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {filteredMembers.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '30px 16px', color: '#a3c4b0', fontSize: '14px' }}>
+              📡 Esperando señales de ubicación de la familia...
+            </div>
+          )}
+
+          {filteredMembers.map((member) => {
+            const isSelected = selectedMember?.id === member.id;
+            return (
+              <div 
+                key={member.id}
+                className={`find-my-member-card ${isSelected ? 'selected' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectMember(member);
+                  // En móviles al seleccionar, colapsar suavemente para ver el mapa centrado
+                  if (window.innerWidth <= 768) {
+                    setViewMode('map');
+                  }
+                }}
+              >
+                {/* Avatar */}
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  backgroundColor: '#1c3829',
+                  backgroundImage: member.photoURL ? `url(${member.photoURL})` : 'none',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '17px',
+                  color: '#fff',
+                  flexShrink: 0,
+                  border: '2px solid rgba(74, 222, 128, 0.4)',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)'
+                }}>
+                  {!member.photoURL && (member.name ? member.name.substring(0, 2).toUpperCase() : '👤')}
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: '700', fontSize: '15px', color: '#ffffff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {member.name} {member.id === effectiveUserId ? '(Tú)' : ''}
+                    </span>
+                    {member.battery !== undefined && member.battery !== null && (
+                      <span style={{ fontSize: '12px', color: member.battery < 20 ? '#ff5252' : '#4ade80', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '600' }}>
+                        🔋 {member.battery}%
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: '#a3c4b0' }}>
+                    <span>
+                      {member.speed > 3 ? `🚗 ${member.speed} km/h` : '📍 En posición'}
+                    </span>
+                    <span>{formatLastSeen(member.lastSeen)}</span>
+                  </div>
+
+                  {/* Botón Cómo llegar */}
+                  {member.latitude && member.longitude && (
+                    <div style={{ marginTop: '4px' }}>
+                      <button 
+                        className="directions-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const url = `https://www.google.com/maps/dir/?api=1&destination=${member.latitude},${member.longitude}`;
+                          window.open(url, '_blank');
+                        }}
+                      >
+                        <div className="directions-pin-loader"></div>
+                        <span>Cómo llegar</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Floating Bottom Dock (Forest Theme) */}
       <div className="map-bottom-dock">
         <button 
           className={`map-dock-item ${viewMode === 'map' ? 'active' : ''}`}
           onClick={() => setViewMode('map')}
-          title="Mapa"
+          title="Mapa Pantalla Completa"
         >
           🌲
         </button>
         <button 
           className={`map-dock-item ${viewMode === 'list' ? 'active' : ''}`}
-          onClick={() => setViewMode('list')}
-          title="Lista de Personas"
+          onClick={() => setViewMode(v => v === 'list' ? 'map' : 'list')}
+          title="Desplegar Lista"
         >
           📍
         </button>
         <button 
           className="map-dock-item"
           onClick={handleLocateMe}
-          title="Centrar"
+          title="Centrar en mí"
         >
           🎯
         </button>
